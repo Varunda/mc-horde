@@ -50,8 +50,8 @@ public class RespawnItem {
         p.getInventory().addItem(
                 RespawnItem.create(RespawnItem.RESPAWN_BASIC_MELEE),
                 RespawnItem.create(RespawnItem.RESPAWN_BASIC_RANGED),
-                RespawnItem.create(RespawnItem.RESPAWN_SAPPER),
-                RespawnItem.create(RespawnItem.RESPAWN_CONTROLLER)
+                RespawnItem.create(RespawnItem.RESPAWN_SAPPER)
+                //RespawnItem.create(RespawnItem.RESPAWN_CONTROLLER)
         );
     }
 

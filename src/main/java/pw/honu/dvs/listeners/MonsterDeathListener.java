@@ -1,6 +1,8 @@
 package pw.honu.dvs.listeners;
 
 import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent;
+import org.bukkit.Particle;
+import org.bukkit.World;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -9,10 +11,14 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.MetadataValue;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
+import pw.honu.dvs.DvSLogger;
 import pw.honu.dvs.MatchState;
 import pw.honu.dvs.managers.BossBarManager;
 import pw.honu.dvs.managers.MatchManager;
 import pw.honu.dvs.managers.MonsterManager;
+import pw.honu.dvs.managers.PlayerManager;
 
 import java.util.Iterator;
 import java.util.List;
@@ -52,6 +58,12 @@ public class MonsterDeathListener implements Listener {
         }
 
         MonsterManager.instance.removeAliveMonster(le);
+
+        Player p = le.getKiller();
+        if (p != null) {
+            PlayerManager.instance.giveRampage(p);
+        }
+
         //MatchManager.instance.updateBossBar();
     }
 

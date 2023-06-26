@@ -147,6 +147,7 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
         register(SpawnCommand.class);
         register(ItemCommand.class);
         register(MobCommand.class);
+        register(WorldCommand.class);
     }
 
     public void register(Class<? extends Command> cmd) throws Exception {

@@ -85,7 +85,7 @@ public class AbilityCaster  {
         }
 
         if (found) {
-            DvS.instance.getLogger().info("Removing casting at index " + i);
+            DvS.instance.getLogger().info("Removing caster at index " + i);
             instances.remove(i);
         }
     }

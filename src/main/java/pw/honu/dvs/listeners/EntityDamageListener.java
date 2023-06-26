@@ -58,7 +58,7 @@ public class EntityDamageListener implements Listener {
                 event.setCancelled(true);
             }
         } else {
-            DvS.instance.getLogger().info("unchecked state of attacking player");
+            DvS.instance.getLogger().info("unchecked state of attacking player " + state);
         }
     }
 

@@ -139,6 +139,10 @@ public class PlayerDeathListener implements Listener {
                     dier.remove();
                 }
             }
+
+            if (p.getKiller() != null) {
+                PlayerManager.instance.giveRampage(p.getKiller());
+            }
         }
 
         // after 5 seconds send the player to the respawn

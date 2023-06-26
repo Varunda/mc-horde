@@ -6,14 +6,13 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.ComponentBuilder;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.TextColor;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.GameMode;
+import org.bukkit.*;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scoreboard.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -160,6 +159,12 @@ public class PlayerManager {
         p.sendMessage("You spawned in with the " + ChatColor.DARK_PURPLE + template.getName() + ChatColor.RESET + " monster template");
 
         return true;
+    }
+
+    public void giveRampage(Player p) {
+        p.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, 20 * 3, 10));
+        World playerWorld = p.getLocation().getWorld();
+        playerWorld.spawnParticle(Particle.WAX_OFF, p.getLocation(), 50, 0.5, 0.5, 0.5);
     }
 
     /**

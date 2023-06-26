@@ -223,6 +223,10 @@ public class MonsterManager {
         return false;
     }
 
+    /**
+     * Check if an entity is a tracked monster
+     * @param e Entity to perform the check on
+     */
     public boolean isTrackedMonster(Entity e) {
         if (!(e instanceof LivingEntity)) {
             return false;
