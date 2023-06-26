@@ -193,6 +193,7 @@ public class MonsterManager {
      * @param le Living entity that will be removed
      */
     public boolean removeAliveMonster(LivingEntity le) {
+        caster.removeCaster(le);
         return aliveMonsters.remove(le);
     }
 

@@ -62,9 +62,22 @@ public class EntityDamageListener implements Listener {
         }
     }
 
-    //@EventHandler
+    @EventHandler
     public void entityDamage(EntityDamageEvent ev) {
+        if (MatchManager.instance.getMatchState() != MatchState.RUNNING) {
+            return;
+        }
 
+        if (ev.getCause() != EntityDamageEvent.DamageCause.BLOCK_EXPLOSION && ev.getCause() != EntityDamageEvent.DamageCause.ENTITY_EXPLOSION) {
+            return;
+        }
+
+        Entity e = ev.getEntity();
+        if (!MonsterManager.instance.isTrackedMonster(e)) {
+            return;
+        }
+
+        ev.setCancelled(true);
     }
 
 }

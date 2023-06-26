@@ -72,4 +72,22 @@ public class AbilityCaster  {
         instances.add(inst);
     }
 
+    public void removeCaster(LivingEntity caster) {
+        boolean found = false;
+        int i = 0;
+
+        for (i = 0; i < instances.size(); ++i) {
+            AbilityInstance inst = instances.get(i);
+            if (inst.caster.getUniqueId() == caster.getUniqueId()) {
+                found = true;
+                break;
+            }
+        }
+
+        if (found) {
+            DvS.instance.getLogger().info("Removing casting at index " + i);
+            instances.remove(i);
+        }
+    }
+
 }

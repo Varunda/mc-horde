@@ -172,7 +172,7 @@ public class PlayerManager {
         for (UUID id : getAlive()) {
             Player p = Bukkit.getPlayer(id);
 
-            if (p != null && p.getGameMode() == GameMode.SURVIVAL) {
+            if (p != null && p.isOnline() && p.getGameMode() == GameMode.SURVIVAL) {
                 players.add(p);
             }
         }
