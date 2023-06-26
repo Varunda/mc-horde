@@ -52,13 +52,7 @@ public class MatchCommand implements Command {
             }
 
             case "killmobs": {
-                Iterator<LivingEntity> monsters = MonsterManager.instance.getAliveMonsters().iterator();
-                while (monsters.hasNext()) {
-                    LivingEntity le = monsters.next();
-                    monsters.remove();
-                    le.setHealth(0);
-                }
-
+                MonsterManager.instance.killAllMonsters();
                 break;
             }
 

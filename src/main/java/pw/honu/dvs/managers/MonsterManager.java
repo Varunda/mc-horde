@@ -239,4 +239,13 @@ public class MonsterManager {
         return aliveMonsters.size();
     }
 
+    public void killAllMonsters() {
+        Iterator<LivingEntity> monsters = getAliveMonsters().iterator();
+        while (monsters.hasNext()) {
+            LivingEntity le = monsters.next();
+            monsters.remove();
+            le.setHealth(0);
+        }
+    }
+
 }

@@ -167,14 +167,12 @@ public class MatchManager {
         new MonsterTargetRunnable().runTaskTimer(DvS.instance, 20 * 1, 20 * 10);
         new MonsterTargetCountRunnable().runTaskTimer(DvS.instance, 0, 20);
 
-        //new MonsterPathingRunnable().runTaskTimer(DvS.instance, 20, 20 * 10);
-
-        //new TitleSequenceRunnable().run();
-
         return true;
     }
 
     public void endMatch() {
+        MonsterManager.instance.killAllMonsters();
+
         TitleUtil.title(Title.title(
                 Component.text("Match ended"),
                 Component.text(""),
