@@ -67,25 +67,7 @@ public class PlayerManager {
 
         players.put(uuid, state);
 
-        this.playerObjective.unregister();
-        this.playerObjective = null;
-
-        int aliveCount = getAlive().size();
-        int total = Bukkit.getOnlinePlayers().size();
-        Component c = Component.text(MatchManager.instance.getMatchState() + " " + aliveCount + "/" + total);
-        this.playerObjective = this.playerState.registerNewObjective("state", Criteria.DUMMY, c);
-        this.playerObjective.setDisplaySlot(DisplaySlot.SIDEBAR);
-
-        int i = 0;
-        for (Player online : Bukkit.getOnlinePlayers()) {
-            Score s = this.playerObjective.getScore(online.getName() + ": " + getPlayer(online.getUniqueId()));
-            s.setScore(i++);
-        }
-
-        // this for loop is after, cause we need to set the scores first
-        for (Player online : Bukkit.getOnlinePlayers()) {
-            online.setScoreboard(playerState);
-        }
+        ScoreboardManager.instance.update();
     }
 
     /**
@@ -104,6 +86,8 @@ public class PlayerManager {
             DvSLogger.warn("Cannot respawn " + playerID + "to monster lobby: player is offline");
             return false;
         }
+
+        p.sendMessage(ChatColor.DARK_PURPLE + "Left click to view items. Right click to select");
 
         PlayerManager.instance.setPlayer(p.getUniqueId(), PlayerState.RESPAWNING);
         if (LocationManager.instance.getMonsterLobby() != null) {
@@ -162,7 +146,7 @@ public class PlayerManager {
     }
 
     public void giveRampage(Player p) {
-        p.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, 20 * 3, 10));
+        p.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, 20 * 3, 100));
         World playerWorld = p.getLocation().getWorld();
         playerWorld.spawnParticle(Particle.WAX_OFF, p.getLocation(), 50, 0.5, 0.5, 0.5);
     }

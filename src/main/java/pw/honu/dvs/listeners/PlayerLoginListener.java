@@ -8,25 +8,31 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.world.PortalCreateEvent;
 import pw.honu.dvs.MatchState;
+import pw.honu.dvs.PlayerState;
 import pw.honu.dvs.managers.BossBarManager;
 import pw.honu.dvs.managers.MatchManager;
 import pw.honu.dvs.managers.PlayerManager;
+import pw.honu.dvs.managers.ScoreboardManager;
 
 public class PlayerLoginListener implements Listener {
 
     @EventHandler
     public void playerLogin(PlayerJoinEvent event) {
-        if (MatchManager.instance.getMatchState() != MatchState.RUNNING) {
+        if (MatchManager.instance.getMatchState() == MatchState.RUNNING) {
+            PlayerManager.instance.respawnToMonsterLobby(event.getPlayer().getUniqueId());
             return;
         }
 
+        PlayerManager.instance.setPlayer(event.getPlayer().getUniqueId(), PlayerState.ALIVE);
+
         BossBarManager.instance.addPlayer(event.getPlayer());
-        PlayerManager.instance.respawnToMonsterLobby(event.getPlayer().getUniqueId());
+        ScoreboardManager.instance.update();
     }
 
     @EventHandler
     public void playerLogout(PlayerQuitEvent event) {
         BossBarManager.instance.removePlayer(event.getPlayer());
+        ScoreboardManager.instance.update();
     }
 
     @EventHandler

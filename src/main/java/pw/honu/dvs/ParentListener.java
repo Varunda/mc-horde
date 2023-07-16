@@ -22,6 +22,8 @@ public class ParentListener {
         pm.registerEvents(new InventoryListener(), plugin);
         pm.registerEvents(new EntityDamageListener(), plugin);
         pm.registerEvents(new EntityMountListener(), plugin);
+        pm.registerEvents(new BlockMeltListener(), plugin);
+        pm.registerEvents(new PlayerToggleSneakListener(), plugin);
     }
 
 }

@@ -41,6 +41,7 @@ public class MatchCommand implements Command {
 
         switch (sub) {
             case "pathfind": {
+                sender.sendMessage("Pathfindign all alive monsters to your location");
                 for (LivingEntity le : MonsterManager.instance.getAliveMonsters()) {
                     if (le instanceof Mob) {
                         Mob m = (Mob) le;
@@ -52,14 +53,27 @@ public class MatchCommand implements Command {
             }
 
             case "killmobs": {
+                sender.sendMessage("Killing all mobs");
                 MonsterManager.instance.killAllMonsters();
                 break;
             }
 
             case "state":
             case "status": {
-                MatchState state = MatchManager.instance.getMatchState();
-                sender.sendMessage("Match state: " + state);
+                if (args.length >= 2) {
+                    try {
+                        MatchState state = MatchState.valueOf(args[2]);
+                        MatchManager.instance.setMatchState(state);
+                        sender.sendMessage("State set to " + state);
+                    } catch (IllegalArgumentException ex) {
+                        sender.sendMessage("Invalid state " + args[2]);
+                        return true;
+                    }
+                } else {
+                    MatchState state = MatchManager.instance.getMatchState();
+                    sender.sendMessage("Match state: " + state);
+                }
+
                 break;
             }
 

@@ -38,10 +38,11 @@ public class AbilityItem {
     public static final AbilityItem LAUNCHER_ITEM = new AbilityItem(false, LaunchAbility.name, Material.SUGAR);
     public static final AbilityItem PATHFIND_ITEM = new AbilityItem(false, PathfindAbility.name, Material.PRISMARINE_SHARD);
     public static final AbilityItem TARGET_ITEM = new AbilityItem(false, TargetAbility.name, Material.BLAZE_ROD);
-    //public static final AbilityItem SPAWN_VINDICATOR_ITEM = new AbilityItem(false, SpawnVindicatorAbility.name, Material.NAUTILUS_SHELL);
-    //public static final AbilityItem SPAWN_PILLAGER_ITEM = new AbilityItem(false, SpawnPillagerAbility.name, Material.COPPER_INGOT);
 
     public static final AbilityItem SPAWN_ZOMBIE = new AbilityItem(false, SpawnZombieAbility.name, Material.ROTTEN_FLESH);
+    public static final AbilityItem SPAWN_HUSK = new AbilityItem(false, SpawnHuskAbility.name, Material.HEART_OF_THE_SEA);
+    public static final AbilityItem SPAWN_DROWNED = new AbilityItem(false, SpawnDrownedAbility.name, Material.TRIDENT);
+    public static final AbilityItem SPAWN_CREEPER = new AbilityItem(false, SpawnCreeperAbility.name, Material.GUNPOWDER);
     public static final AbilityItem SPAWN_PIGLIN_ITEM = new AbilityItem(false, SpawnPiglinAbility.name, Material.NAUTILUS_SHELL);
     public static final AbilityItem SPAWN_PIGLIN_ARCHER_ITEM = new AbilityItem(false, SpawnPiglinArcherAbility.name, Material.COPPER_INGOT);
 

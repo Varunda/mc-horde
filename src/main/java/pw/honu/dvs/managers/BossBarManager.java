@@ -36,6 +36,9 @@ public class BossBarManager {
         bar.removePlayer(p);
     }
 
+    /**
+     * Remove the boss bar from all players
+     */
     public void removeAll() {
         bar.removeAll();
     }

@@ -5,10 +5,13 @@ import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.title.Title;
 import org.bukkit.*;
 import org.bukkit.block.Chest;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 import pw.honu.dvs.*;
 import pw.honu.dvs.item.AbilityItem;
@@ -23,6 +26,7 @@ import java.awt.*;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class MatchManager {
 
@@ -38,9 +42,13 @@ public class MatchManager {
 
     private DvS plugin;
 
+    private BukkitTask gatheringCountdownRunnable;
+    private BukkitTask monsterTargetTask;
+    private BukkitTask monsterCheckpointTask;
+
     private MatchManager(DvS plugin) {
         this.plugin = plugin;
-        matchState = MatchState.GATHERING;
+        matchState = MatchState.PRE_GAME;
     }
 
     /**
@@ -99,9 +107,13 @@ public class MatchManager {
      * @return If the match was successfully started
      */
     public boolean startMatch() {
-        if (getMatchState() != MatchState.GATHERING) {
-            DvS.instance.getLogger().warning("Cannot start match, state is not " + MatchState.GATHERING + ", is currently: " + getMatchState());
+        if (MapManager.instance.getNextMap() == null) {
+            DvS.instance.getLogger().warning("Cannot start match: map is not set");
             return false;
+        }
+
+        if (getMatchState() != MatchState.PRE_GAME) {
+            DvS.instance.getLogger().warning("State is " + this.getMatchState() + " not " + MatchState.PRE_GAME + ". Might cause unexpected behavior");
         }
 
         @Nullable Location monsterSpawn = LocationManager.instance.getMonsterSpawn();
@@ -124,12 +136,53 @@ public class MatchManager {
         }
 
         assert playerSpawn != null;
+        World gameWorld = playerSpawn.getWorld();
+
+        gameWorld.setTime(0);
+        gameWorld.setGameRule(GameRule.DO_IMMEDIATE_RESPAWN, false);
+        gameWorld.setGameRule(GameRule.KEEP_INVENTORY, false);
+        gameWorld.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, true);
+        gameWorld.setGameRule(GameRule.BLOCK_EXPLOSION_DROP_DECAY, true);
+        gameWorld.setGameRule(GameRule.DO_INSOMNIA, false);
+        gameWorld.setGameRule(GameRule.DO_TRADER_SPAWNING, false);
+        gameWorld.setGameRule(GameRule.DO_WEATHER_CYCLE, false);
+        gameWorld.setGameRule(GameRule.SPECTATORS_GENERATE_CHUNKS, false);
+        gameWorld.setPVP(false);
+        gameWorld.setDifficulty(Difficulty.EASY);
+
+        Bukkit.getOnlinePlayers().forEach(iter -> {
+            PlayerManager.instance.setPlayer(iter.getUniqueId(), PlayerState.ALIVE);
+            BossBarManager.instance.addPlayer(iter);
+
+            iter.teleport(playerSpawn);
+            iter.sendMessage(ChatColor.DARK_PURPLE + "Match started!");
+        });
+
+        setMatchState(MatchState.GATHERING);
+
+        HordeMap map = MapManager.instance.getNextMap();
+        assert map != null;
+
+        this.gatheringCountdownRunnable = new GatheringCountdownRunnable(this, map.getSetupTicks()).runTaskTimer(this.plugin, 0, 1);
+        ScoreboardManager.instance.update();
+
+        return true;
+    }
+
+    public void startCombatPhase() {
+        if (this.getMatchState() != MatchState.GATHERING) {
+            DvS.instance.getLogger().warning("State is " + this.getMatchState() + " not " + MatchState.GATHERING + ". Might cause unexpected behavior");
+        }
+
+        @Nullable Location playerSpawn = LocationManager.instance.getPlayerStart();
+        if (null == playerSpawn) {
+            DvSLogger.error("Cannot start combat phase: spawn location is not set!");
+            return;
+        }
 
         World gameWorld = playerSpawn.getWorld();
 
         gameWorld.setTime(18_000);
-        gameWorld.setGameRule(GameRule.DO_IMMEDIATE_RESPAWN, false);
-        gameWorld.setGameRule(GameRule.KEEP_INVENTORY, false);
         gameWorld.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, false);
         gameWorld.setGameRule(GameRule.BLOCK_EXPLOSION_DROP_DECAY, true);
         gameWorld.setGameRule(GameRule.DO_INSOMNIA, false);
@@ -139,17 +192,17 @@ public class MatchManager {
         gameWorld.setPVP(true);
         gameWorld.setDifficulty(Difficulty.EASY);
 
-        setMatchState(MatchState.RUNNING);
-
         Bukkit.getOnlinePlayers().forEach(iter -> {
             PlayerManager.instance.setPlayer(iter.getUniqueId(), PlayerState.ALIVE);
-            BossBarManager.instance.addPlayer(iter);
 
             if (iter.isOp()) {
                 iter.getInventory().addItem(AbilityItem.create(AbilityItem.PATHFIND_ITEM, 1));
                 iter.getInventory().addItem(AbilityItem.create(AbilityItem.TARGET_ITEM, 1));
                 iter.getInventory().addItem(AbilityItem.create(AbilityItem.LAUNCHER_ITEM, 1));
                 iter.getInventory().addItem(AbilityItem.create(AbilityItem.SPAWN_ZOMBIE, 1));
+                iter.getInventory().addItem(AbilityItem.create(AbilityItem.SPAWN_HUSK, 1));
+                iter.getInventory().addItem(AbilityItem.create(AbilityItem.SPAWN_DROWNED, 1));
+                iter.getInventory().addItem(AbilityItem.create(AbilityItem.SPAWN_CREEPER, 1));
                 iter.getInventory().addItem(AbilityItem.create(AbilityItem.SPAWN_PIGLIN_ITEM, 1));
                 iter.getInventory().addItem(AbilityItem.create(AbilityItem.SPAWN_PIGLIN_ARCHER_ITEM, 1));
             } else {
@@ -161,13 +214,28 @@ public class MatchManager {
             }
 
             iter.teleport(playerSpawn);
-            iter.sendMessage(ChatColor.DARK_PURPLE + "Match started!");
+            iter.sendMessage(ChatColor.DARK_PURPLE + "Combat has begun!");
         });
 
-        new MonsterTargetRunnable().runTaskTimer(DvS.instance, 20 * 1, 20 * 10);
-        new MonsterTargetCountRunnable().runTaskTimer(DvS.instance, 0, 20);
+        ScoreboardManager.instance.update();
 
-        return true;
+        if (this.gatheringCountdownRunnable != null) {
+            this.gatheringCountdownRunnable.cancel();
+            this.gatheringCountdownRunnable = null;
+        }
+
+        for (Entity e : gameWorld.getEntities()) {
+            if (e.getType() == EntityType.DROPPED_ITEM
+                || e.getType() == EntityType.ITEM_FRAME
+                || e.getType() == EntityType.GLOW_ITEM_FRAME
+                || e.getType() == EntityType.ARMOR_STAND) {
+
+                e.remove();
+            }
+        }
+
+        this.monsterTargetTask = new MonsterTargetRunnable().runTaskTimer(DvS.instance, 20 * 1, 20 * 10);
+        this.monsterCheckpointTask = new MonsterTargetCountRunnable().runTaskTimer(DvS.instance, 0, 20);
     }
 
     public void endMatch() {
@@ -185,7 +253,24 @@ public class MatchManager {
             DisguiseManager.instance.removeDisguise(p);
         }
 
+        BossBarManager.instance.removeAll();
+
         setMatchState(MatchState.POST_GAME);
+
+        if (this.gatheringCountdownRunnable != null) {
+            this.gatheringCountdownRunnable.cancel();
+            this.gatheringCountdownRunnable = null;
+        }
+
+        if (this.monsterTargetTask != null) {
+            this.monsterTargetTask.cancel();
+            this.monsterTargetTask = null;
+        }
+
+        if (this.monsterCheckpointTask != null) {
+            this.monsterCheckpointTask.cancel();
+            this.monsterCheckpointTask = null;
+        }
     }
 
     public void updateBossBar() {
@@ -211,4 +296,5 @@ public class MatchManager {
     public void setPlayerChest(@Nullable Chest playerChest) {
         this.playerChest = playerChest;
     }
+
 }

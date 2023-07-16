@@ -42,9 +42,10 @@ public class PlayerMonsters {
 
         PLAYER_MONSTER_SAPPER.setHelmet(ItemUtil.getColoredLeatherHelmet(Color.RED));
         PLAYER_MONSTER_SAPPER.addInventoryItem(new ItemStack(Material.GOLDEN_PICKAXE));
-        PLAYER_MONSTER_SAPPER.addInventoryItem(new ItemStack(Material.TNT, 3));
+        //PLAYER_MONSTER_SAPPER.addInventoryItem(new ItemStack(Material.TNT, 1));
         PLAYER_MONSTER_SAPPER.addInventoryItem(new ItemStack(Material.FIRE_CHARGE, 3));
         PLAYER_MONSTER_SAPPER.addInventoryItem(new ItemStack(Material.WEEPING_VINES, 10));
+        PLAYER_MONSTER_SAPPER.addInventoryItem(new ItemStack(Material.LADDER, 10));
 
         PLAYER_MONSTER_CONTROLLER.setHelmet(ItemUtil.getColoredLeatherHelmet(Color.RED));
         PLAYER_MONSTER_CONTROLLER.addInventoryItem(new ItemStack(Material.STONE_SWORD));

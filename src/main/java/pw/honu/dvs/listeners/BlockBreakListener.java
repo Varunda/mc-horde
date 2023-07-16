@@ -21,6 +21,10 @@ public class BlockBreakListener implements Listener {
 
     @EventHandler
     public void blockBreak(BlockBreakEvent event) {
+        if (event.getBlock().getType() == Material.ICE) {
+            event.getBlock().setType(Material.AIR);
+        }
+
         if (MatchManager.instance.getMatchState() != MatchState.GATHERING) {
             return;
         }

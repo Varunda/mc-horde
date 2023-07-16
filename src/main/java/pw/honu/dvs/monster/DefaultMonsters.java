@@ -22,8 +22,11 @@ public class DefaultMonsters {
     public static final MonsterTemplate RAVAGER = new MonsterTemplate("ravager", EntityType.RAVAGER, DisguiseType.RAVAGER);
     public static final MonsterTemplate BLAZE = new MonsterTemplate("blaze", EntityType.BLAZE, DisguiseType.BLAZE);
     public static final MonsterTemplate GHAST = new MonsterTemplate("ghast", EntityType.GHAST, DisguiseType.GHAST);
+    public static final MonsterTemplate MAGMA_CUBE = new MonsterTemplate("magma_cube", EntityType.MAGMA_CUBE, DisguiseType.MAGMA_CUBE);
     public static final MonsterTemplate ILLUSIONER = new MonsterTemplate("illusioner", EntityType.ILLUSIONER, DisguiseType.ILLUSIONER);
     public static final MonsterTemplate GIANT = new MonsterTemplate("giant", EntityType.GIANT, DisguiseType.GIANT);
+    public static final MonsterTemplate HUSK = new MonsterTemplate("husk", EntityType.HUSK, DisguiseType.HUSK);
+    public static final MonsterTemplate DROWNED = new MonsterTemplate("drowned", EntityType.DROWNED, DisguiseType.DROWNED);
 
     public static final MonsterTemplate PILLAGER = new MonsterTemplate("pillager", EntityType.PILLAGER, DisguiseType.PILLAGER);
     public static final MonsterTemplate VINDICATOR = new MonsterTemplate("vindicator", EntityType.VINDICATOR, DisguiseType.VINDICATOR);

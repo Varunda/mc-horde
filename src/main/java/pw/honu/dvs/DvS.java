@@ -1,7 +1,10 @@
 package pw.honu.dvs;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
 
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -14,6 +17,7 @@ import pw.honu.dvs.listeners.MonsterDeathListener;
 import pw.honu.dvs.listeners.PlayerDeathListener;
 import pw.honu.dvs.listeners.PlayerLoginListener;
 import pw.honu.dvs.managers.BossBarManager;
+import pw.honu.dvs.managers.MapManager;
 
 public class DvS extends JavaPlugin {
 
@@ -36,6 +40,8 @@ public class DvS extends JavaPlugin {
     private void setup() {
         try {
             createDataFolder();
+            createMapsFolder();
+            loadMaps();
 
             PluginCommand dvs = getCommand("dvs");
             if (dvs != null) {
@@ -59,6 +65,37 @@ public class DvS extends JavaPlugin {
                 getLogger().warning("failed to create data folder");
             }
         }
+    }
+
+    private void createMapsFolder() {
+        File dir = new File("./maps");
+        if (!dir.exists()) {
+            if (dir.mkdir()) {
+                getLogger().info("Maps folder made");
+            } else {
+                getLogger().warning("failed to create maps folder");
+            }
+        }
+    }
+
+    public void loadMaps() {
+        File mapsFolder = new File("./maps");
+        DvS.instance.getLogger().info("Loading maps from " + mapsFolder.getAbsolutePath());
+
+        File[] files = mapsFolder.listFiles();
+        assert files != null;
+
+        List<HordeMap> maps = new ArrayList<>();
+        for (File map : files) {
+            DvS.instance.getLogger().info("Loading map in folder " + map.getName() + "...");
+            try {
+                maps.add(HordeMap.loadFromFolder(map));
+            } catch (IOException ex) {
+                DvS.instance.getLogger().severe("Failed to load map " + map.getName() + ":\n" + ex.getLocalizedMessage());
+            }
+        }
+
+        MapManager.instance.setMaps(maps);
     }
 
 }

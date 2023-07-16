@@ -17,6 +17,13 @@ public class WorldUtil {
         return new WorldCreator(newName).createWorld();
     }
 
+    public static World cloneWorld(File inputWorld, String newName) {
+        File copiedFile = new File(Bukkit.getWorldContainer(), newName);
+
+        copyFileStructure(inputWorld, copiedFile);
+        return new WorldCreator(newName).createWorld();
+    }
+
     // https://bukkit.org/threads/cloning-worlds-1-8-8.487334/
     private static void copyFileStructure(File source, File target) {
         try {
