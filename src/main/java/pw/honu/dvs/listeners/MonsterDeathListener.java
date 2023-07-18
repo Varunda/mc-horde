@@ -15,10 +15,7 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import pw.honu.dvs.DvSLogger;
 import pw.honu.dvs.MatchState;
-import pw.honu.dvs.managers.BossBarManager;
-import pw.honu.dvs.managers.MatchManager;
-import pw.honu.dvs.managers.MonsterManager;
-import pw.honu.dvs.managers.PlayerManager;
+import pw.honu.dvs.managers.*;
 
 import java.util.Iterator;
 import java.util.List;
@@ -62,6 +59,7 @@ public class MonsterDeathListener implements Listener {
         Player p = le.getKiller();
         if (p != null) {
             PlayerManager.instance.giveRampage(p);
+            PlayerStatsManager.instance.incrementKills(p);
         }
 
         //MatchManager.instance.updateBossBar();

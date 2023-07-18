@@ -7,7 +7,9 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Mob;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
+import pw.honu.dvs.MatchState;
 import pw.honu.dvs.managers.LocationManager;
+import pw.honu.dvs.managers.MatchManager;
 
 import java.util.EnumSet;
 
@@ -35,7 +37,15 @@ public class MonsterTargetMobGoal implements Goal<Mob> {
 
     @Override
     public boolean shouldStayActive() {
+        if (MatchManager.instance.getMatchState() != MatchState.RUNNING) {
+            return false;
+        }
+
         if (LocationManager.instance.getMonsterTarget() == null) {
+            return false;
+        }
+
+        if (!LocationManager.instance.getMonsterTarget().getWorld().equals(mob.getWorld())) {
             return false;
         }
 

@@ -17,7 +17,7 @@ import java.util.List;
 
 @CommandInfo(
         name = "match",
-        usage = "/dvs match |killmobs|pathfind|state|end",
+        usage = "/dvs match killmobs|pathfind|state|end|next",
         desc = "Match control command",
         permission = "",
         pattern = "match"
@@ -60,7 +60,7 @@ public class MatchCommand implements Command {
 
             case "state":
             case "status": {
-                if (args.length >= 2) {
+                if (args.length >= 3) {
                     try {
                         MatchState state = MatchState.valueOf(args[2]);
                         MatchManager.instance.setMatchState(state);
@@ -82,6 +82,22 @@ public class MatchCommand implements Command {
                 break;
             }
 
+            case "next": {
+                MatchState state = MatchManager.instance.getMatchState();
+
+                if (state == MatchState.GATHERING) {
+                    MatchManager.instance.startCombatPhase();
+                } else if (state == MatchState.RUNNING) {
+                    MatchManager.instance.endMatch();
+                } else if (state == MatchState.POST_GAME) {
+                    MatchManager.instance.resetMatch();
+                } else {
+                    sender.sendMessage("Cannot advance match to next state, not in GATHERING");
+                }
+
+                break;
+            }
+
             default:
                 return false;
         }
@@ -91,6 +107,6 @@ public class MatchCommand implements Command {
 
     @Override
     public List<String> tab(MatchManager match, Player player, String... args) {
-        return Arrays.asList("pathfind", "killmobs", "state", "end");
+        return Arrays.asList("pathfind", "killmobs", "state", "end", "next");
     }
 }

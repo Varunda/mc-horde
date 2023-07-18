@@ -43,6 +43,32 @@ public class WaveCommand implements Command {
         String sub = args[0];
 
         switch (sub) {
+            case "repeat": {
+
+                if (args.length != 2) {
+                    return false;
+                }
+
+                int count;
+                try {
+                    count = Integer.parseInt(args[1]);
+                } catch (NumberFormatException ex) {
+                    sender.sendMessage(ChatColor.RED + "Failed to parse " + args[1] + " to an int");
+                    return false;
+                }
+
+                WaveManager.instance.repeatInSeconds = count;
+                count = Math.max(0, count);
+
+                if (count > 0) {
+                    sender.sendMessage("Wave will be sent every " + count + " seconds");
+                } else {
+                    sender.sendMessage("Repeat wave disabled");
+                }
+
+                break;
+            }
+
             case "add":
             case "set":
                 if (args.length != 3) {
@@ -104,6 +130,7 @@ public class WaveCommand implements Command {
                     sender.sendMessage("    " + e.getTemplate().getName() + ": " + e.getCount());
                 }
                 break;
+
 
             default:
                 return false;

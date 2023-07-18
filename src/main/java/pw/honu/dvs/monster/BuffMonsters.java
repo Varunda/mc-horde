@@ -36,6 +36,7 @@ public class BuffMonsters {
     public static final MonsterTemplate HOGLIN_SPEW_TNT = new MonsterTemplate("hoglin_spew_tnt", EntityType.HOGLIN, DisguiseType.HOGLIN);
     public static final MonsterTemplate GHAST_MOUNT = new MonsterTemplate("ghast_mount", EntityType.GHAST, DisguiseType.GHAST);
     public static final MonsterTemplate GHAST_SPEW_TNT = new MonsterTemplate("ghast_spew_tnt", EntityType.GHAST, DisguiseType.GHAST);
+    public static final MonsterTemplate MAGMA_CUBE_GROW = new MonsterTemplate("magma_cube_grow", EntityType.MAGMA_CUBE, DisguiseType.MAGMA_CUBE);
 
     static {
         PILLAGER_BUFF_SPEED.setHelmet(new ItemStack(Material.BLUE_BANNER));
@@ -104,6 +105,10 @@ public class BuffMonsters {
         GHAST_SPEW_TNT.setAbilityName(SpewTntAbility.name);
         GHAST_SPEW_TNT.setAbilityCooldown(20 * 20);
         GHAST_SPEW_TNT.setAbilityCount(5);
+
+        MAGMA_CUBE_GROW.setAbilityName(GrowSizeAbility.name);
+        MAGMA_CUBE_GROW.setAbilityCooldown(10 * 20);
+        MAGMA_CUBE_GROW.setAbilityCount(15);
 
     }
 

@@ -8,11 +8,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import pw.honu.dvs.DvS;
-import pw.honu.dvs.ability.Ability;
-import pw.honu.dvs.commands.debug.AbilityCommand;
-import pw.honu.dvs.commands.debug.ItemCommand;
-import pw.honu.dvs.commands.debug.MatchCommand;
-import pw.honu.dvs.commands.debug.MobCommand;
+import pw.honu.dvs.commands.debug.*;
 import pw.honu.dvs.commands.setup.*;
 import pw.honu.dvs.managers.MatchManager;
 

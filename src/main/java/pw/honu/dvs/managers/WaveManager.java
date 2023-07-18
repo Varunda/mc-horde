@@ -24,6 +24,8 @@ public class WaveManager {
 
     public Wave current;
 
+    public int repeatInSeconds = 0;
+
     public WaveManager() {
         current = new Wave();
     }

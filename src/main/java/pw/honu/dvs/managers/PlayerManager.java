@@ -70,6 +70,22 @@ public class PlayerManager {
         ScoreboardManager.instance.update();
     }
 
+    public boolean sendToPlayerSpawn(@NotNull Player player) {
+        if (LocationManager.instance.getPlayerStart() == null) {
+            DvSLogger.warn("Cannot send player to player spawn: player spawn is not set");
+            return false;
+        }
+
+        if (!player.isOnline()) {
+            DvSLogger.warn("Cannot send player to player spawn: player is not online");
+            return false;
+        }
+
+        player.teleport(LocationManager.instance.getPlayerStart());
+
+        return true;
+    }
+
     /**
      * Respawn a player to the monster lobby, where they can pick which monster they'd like to spawn at next
      * @param playerID UUID of the player

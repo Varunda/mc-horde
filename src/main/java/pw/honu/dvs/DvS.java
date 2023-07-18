@@ -2,20 +2,15 @@ package pw.honu.dvs;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
+import org.bukkit.Bukkit;
+import org.bukkit.Difficulty;
+import org.bukkit.World;
 import org.bukkit.command.PluginCommand;
-import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import pw.honu.dvs.commands.CommandHandler;
-import pw.honu.dvs.listeners.BlockBreakListener;
-import pw.honu.dvs.listeners.MonsterDeathListener;
-import pw.honu.dvs.listeners.PlayerDeathListener;
-import pw.honu.dvs.listeners.PlayerLoginListener;
 import pw.honu.dvs.managers.BossBarManager;
 import pw.honu.dvs.managers.MapManager;
 
@@ -51,6 +46,14 @@ public class DvS extends JavaPlugin {
             }
 
             ParentListener.register(this);
+
+            World lobby = Bukkit.getWorld("world");
+            if (lobby == null) {
+                DvSLogger.error("no world/lobby found");
+            } else {
+                lobby.setDifficulty(Difficulty.PEACEFUL);
+            }
+
         } catch (Exception ex) {
             getLogger().severe(ex.toString());
         }

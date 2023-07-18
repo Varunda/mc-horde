@@ -2,9 +2,11 @@ package pw.honu.dvs.managers;
 
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.*;
 import pw.honu.dvs.MatchState;
+import pw.honu.dvs.PlayerState;
 
 public class ScoreboardManager {
 
@@ -35,7 +37,22 @@ public class ScoreboardManager {
 
         int i = 0;
         for (Player online : Bukkit.getOnlinePlayers()) {
-            Score s = this.playerObjective.getScore(online.getName() + ": " + PlayerManager.instance.getPlayer(online.getUniqueId()));
+            String score = "";
+
+            PlayerState playerState = PlayerManager.instance.getPlayer(online.getUniqueId());
+            if (playerState == PlayerState.ALIVE) {
+                score = ChatColor.GREEN.toString();
+            } else if (playerState == PlayerState.RESPAWNING) {
+                score = ChatColor.RED.toString();
+            } else if (playerState == PlayerState.MONSTER) {
+                score = ChatColor.RED.toString();
+            } else {
+                score = ChatColor.GRAY.toString();
+            }
+
+            score += online.getName();
+
+            Score s = this.playerObjective.getScore(score);
             s.setScore(i++);
         }
 

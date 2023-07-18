@@ -24,6 +24,9 @@ public class ParentListener {
         pm.registerEvents(new EntityMountListener(), plugin);
         pm.registerEvents(new BlockMeltListener(), plugin);
         pm.registerEvents(new PlayerToggleSneakListener(), plugin);
+        pm.registerEvents(new PotionEffectListener(), plugin);
+        pm.registerEvents(new BreedListener(), plugin);
+        pm.registerEvents(new PlayerInteractEntityListener(), plugin);
     }
 
 }

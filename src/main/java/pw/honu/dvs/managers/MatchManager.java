@@ -45,6 +45,7 @@ public class MatchManager {
     private BukkitTask gatheringCountdownRunnable;
     private BukkitTask monsterTargetTask;
     private BukkitTask monsterCheckpointTask;
+    private BukkitTask waveRepeatTask;
 
     private MatchManager(DvS plugin) {
         this.plugin = plugin;
@@ -154,6 +155,7 @@ public class MatchManager {
             PlayerManager.instance.setPlayer(iter.getUniqueId(), PlayerState.ALIVE);
             BossBarManager.instance.addPlayer(iter);
 
+            iter.setGameMode(GameMode.SURVIVAL);
             iter.teleport(playerSpawn);
             iter.sendMessage(ChatColor.DARK_PURPLE + "Match started!");
         });
@@ -211,13 +213,12 @@ public class MatchManager {
                 if (iter.getPlayer() != null && items != null) {
                     iter.getPlayer().getInventory().setContents(items);
                 }
+                iter.clearActivePotionEffects();
             }
 
             iter.teleport(playerSpawn);
             iter.sendMessage(ChatColor.DARK_PURPLE + "Combat has begun!");
         });
-
-        ScoreboardManager.instance.update();
 
         if (this.gatheringCountdownRunnable != null) {
             this.gatheringCountdownRunnable.cancel();
@@ -236,8 +237,15 @@ public class MatchManager {
 
         this.monsterTargetTask = new MonsterTargetRunnable().runTaskTimer(DvS.instance, 20 * 1, 20 * 10);
         this.monsterCheckpointTask = new MonsterTargetCountRunnable().runTaskTimer(DvS.instance, 0, 20);
+        this.waveRepeatTask = new WaveRepeatRunnable().runTaskTimer(DvS.instance, 0, 20);
+
+        this.setMatchState(MatchState.RUNNING);
+        ScoreboardManager.instance.update();
     }
 
+    /**
+     * End the match. Kills all monsters, cancels and runnables, sets everyone to spectator mode, removes boss bars
+     */
     public void endMatch() {
         MonsterManager.instance.killAllMonsters();
 
@@ -251,6 +259,8 @@ public class MatchManager {
             p.setGameMode(GameMode.SPECTATOR);
 
             DisguiseManager.instance.removeDisguise(p);
+            p.clearActivePotionEffects();
+            p.getInventory().clear();
         }
 
         BossBarManager.instance.removeAll();
@@ -271,6 +281,30 @@ public class MatchManager {
             this.monsterCheckpointTask.cancel();
             this.monsterCheckpointTask = null;
         }
+
+        ScoreboardManager.instance.update();
+    }
+
+    public void resetMatch() {
+        if (this.getMatchState() != MatchState.POST_GAME) {
+            DvS.instance.getLogger().warning("State is " + this.getMatchState() + " not " + MatchState.POST_GAME + ". Might cause unexpected behavior");
+        }
+
+        World lobbyWorld = Bukkit.getWorld("world");
+        if (lobbyWorld == null) {
+            DvSLogger.error("Cannot reset match, lobby world 'world' is missing");
+            return;
+        }
+
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            p.teleport(lobbyWorld.getSpawnLocation());
+            p.setGameMode(GameMode.ADVENTURE);
+            p.clearActivePotionEffects();
+            p.getInventory().clear();
+        }
+
+        setMatchState(MatchState.PRE_GAME);
+        ScoreboardManager.instance.update();
     }
 
     public void updateBossBar() {

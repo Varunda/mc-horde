@@ -1,4 +1,4 @@
-package pw.honu.dvs.commands.setup;
+package pw.honu.dvs.commands.debug;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -103,6 +103,24 @@ public class PlayerCommand implements Command {
 
                 PlayerState state = PlayerManager.instance.getPlayer(p.getUniqueId());
                 sender.sendMessage("Player " + p.getName() + " has state of " + state);
+                break;
+            }
+
+            case "rampage": {
+                if (args.length != 2) {
+                    return false;
+                }
+
+                String playerName = args[1].toLowerCase();
+                Player p = Commands.getPlayer(playerName);
+
+                if (p == null) {
+                    sender.sendMessage(ChatColor.YELLOW + "Failed to find player with name of '" + playerName + "'");
+                    return true;
+                }
+
+                PlayerManager.instance.giveRampage(p);
+                sender.sendMessage("Gave rampage to " + p.getName());
                 break;
             }
 

@@ -26,6 +26,7 @@ import pw.honu.dvs.PlayerState;
 import pw.honu.dvs.managers.DisguiseManager;
 import pw.honu.dvs.managers.MatchManager;
 import pw.honu.dvs.managers.PlayerManager;
+import pw.honu.dvs.managers.PlayerStatsManager;
 import pw.honu.dvs.util.TitleUtil;
 
 import java.time.Duration;
@@ -142,6 +143,7 @@ public class PlayerDeathListener implements Listener {
 
             if (p.getKiller() != null) {
                 PlayerManager.instance.giveRampage(p.getKiller());
+                PlayerStatsManager.instance.incrementKills(p);
             }
         }
 

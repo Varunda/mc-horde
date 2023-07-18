@@ -133,15 +133,12 @@ public class MonsterManager {
             Mob m = (Mob) le;
 
             MobGoals mg = Bukkit.getMobGoals();
-            Collection<Goal<Mob>> goals = mg.getAllGoals(m);
-            for (Goal<Mob> goal : goals) {
-                if (KEPT_KEYS.contains(goal.getKey().getNamespacedKey().getKey())) {
-                    continue;
-                }
-                //mg.removeGoal(m, goal);
-            }
-
             mg.addGoal(m, 1, new MonsterTargetMobGoal(DvS.instance, m));
+        }
+
+        if (le instanceof Slime) {
+            Slime s = (Slime) le;
+            s.setWander(false);
         }
 
         if (le instanceof Spellcaster && template.getAbilityName() != null) {
