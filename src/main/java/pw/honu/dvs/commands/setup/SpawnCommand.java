@@ -59,11 +59,7 @@ public class SpawnCommand implements Command {
 
         Player p = Commands.unwrap(sender);
 
-        Location loc = p.getLocation();
-        if (LocationManager.instance.getMonsterSpawn() != null) {
-            loc = LocationManager.instance.getMonsterSpawn();
-        }
-
+        Location loc = MatchManager.instance.getRunningMap().getRandomMonsterSpawn();
         for (int i = 0; i < count; ++i){
             MonsterManager.instance.spawn(template, loc);
         }

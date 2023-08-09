@@ -5,6 +5,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.*;
+import org.jetbrains.annotations.NotNull;
 import pw.honu.dvs.MatchState;
 import pw.honu.dvs.PlayerState;
 
@@ -61,6 +62,5 @@ public class ScoreboardManager {
             online.setScoreboard(playerState);
         }
     }
-
 
 }

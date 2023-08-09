@@ -1,8 +1,11 @@
 package pw.honu.dvs.listeners;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.World;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
@@ -13,10 +16,8 @@ import org.bukkit.event.world.PortalCreateEvent;
 import pw.honu.dvs.DvSLogger;
 import pw.honu.dvs.MatchState;
 import pw.honu.dvs.PlayerState;
-import pw.honu.dvs.managers.BossBarManager;
-import pw.honu.dvs.managers.MatchManager;
-import pw.honu.dvs.managers.PlayerManager;
-import pw.honu.dvs.managers.ScoreboardManager;
+import pw.honu.dvs.managers.*;
+import ru.xezard.glow.data.glow.Glow;
 
 public class PlayerLoginListener implements Listener {
 
@@ -37,13 +38,16 @@ public class PlayerLoginListener implements Listener {
             if (!event.getPlayer().isOp()) {
                 event.getPlayer().setGameMode(GameMode.ADVENTURE);
                 event.getPlayer().getInventory().clear();
+                event.getPlayer().clearActivePotionEffects();
             }
 
         } else if (state == MatchState.GATHERING) {
             PlayerManager.instance.setPlayer(event.getPlayer().getUniqueId(), PlayerState.ALIVE);
             PlayerManager.instance.sendToPlayerSpawn(event.getPlayer());
         } else if (state == MatchState.RUNNING) {
-            PlayerManager.instance.respawnToMonsterLobby(event.getPlayer().getUniqueId());
+            if (!event.getPlayer().isOp()) {
+                PlayerManager.instance.respawnToMonsterLobby(event.getPlayer().getUniqueId());
+            }
         } else if (state == MatchState.POST_GAME) {
             event.getPlayer().setGameMode(GameMode.SPECTATOR);
             PlayerManager.instance.setPlayer(event.getPlayer().getUniqueId(), PlayerState.MONSTER);

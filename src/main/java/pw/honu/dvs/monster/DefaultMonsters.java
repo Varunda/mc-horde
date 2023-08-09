@@ -4,8 +4,12 @@ import me.libraryaddict.disguise.disguisetypes.DisguiseType;
 import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import pw.honu.dvs.DvS;
 import pw.honu.dvs.managers.MonsterManager;
+
+import java.util.List;
 
 public class DefaultMonsters {
 
@@ -43,12 +47,17 @@ public class DefaultMonsters {
         PILLAGER.setMainHand(new ItemStack(Material.CROSSBOW));
 
         PIGLIN.setMainHand(new ItemStack(Material.STONE_AXE));
+        PIGLIN.setPotionEffects(List.of(new PotionEffect(PotionEffectType.SLOW, 100000, 1, true, false)));
 
-        PIGLIN_ARCHER.setMainHand(new ItemStack(Material.BOW));
+        PIGLIN_ARCHER.setMainHand(new ItemStack(Material.CROSSBOW));
+        PIGLIN_ARCHER.setPotionEffects(List.of(new PotionEffect(PotionEffectType.SLOW, 100000, 1, true, false)));
+        PIGLIN_ARCHER.setPotionEffects(List.of(new PotionEffect(PotionEffectType.WEAKNESS, 100000, 1, true, false)));
 
         PIGLIN_BRUTE.setMainHand(new ItemStack(Material.IRON_AXE));
+        PIGLIN_BRUTE.setPotionEffects(List.of(new PotionEffect(PotionEffectType.SLOW, 100000, 1, true, false)));
 
         PIGLIN_BRUTE_ARCHER.setMainHand(new ItemStack(Material.CROSSBOW));
+        PIGLIN_BRUTE_ARCHER.setPotionEffects(List.of(new PotionEffect(PotionEffectType.SLOW, 100000, 1, true, false)));
     }
 
 }

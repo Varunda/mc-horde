@@ -113,10 +113,6 @@ public class WaveCommand implements Command {
                     sender.sendMessage(ChatColor.YELLOW + "Match has not started");
                     return true;
                 }
-                if (LocationManager.instance.getMonsterSpawn() == null) {
-                    sender.sendMessage(ChatColor.YELLOW + "Missing monster spawn. Use /dvs setspawn monster");
-                    return true;
-                }
 
                 boolean spawned = MatchManager.instance.spawnWave(WaveManager.instance.current);
                 if (!spawned) {

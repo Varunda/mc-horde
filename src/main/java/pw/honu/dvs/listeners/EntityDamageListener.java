@@ -68,7 +68,11 @@ public class EntityDamageListener implements Listener {
             return;
         }
 
-        if (ev.getCause() != EntityDamageEvent.DamageCause.BLOCK_EXPLOSION && ev.getCause() != EntityDamageEvent.DamageCause.ENTITY_EXPLOSION) {
+        if (ev.getCause() != EntityDamageEvent.DamageCause.BLOCK_EXPLOSION
+                && ev.getCause() != EntityDamageEvent.DamageCause.ENTITY_EXPLOSION
+                && ev.getCause() != EntityDamageEvent.DamageCause.FIRE
+                && ev.getCause() != EntityDamageEvent.DamageCause.HOT_FLOOR // hot floor = magma block
+                && ev.getCause() != EntityDamageEvent.DamageCause.LAVA) {
             return;
         }
 

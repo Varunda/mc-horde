@@ -13,6 +13,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 import pw.honu.dvs.commands.CommandHandler;
 import pw.honu.dvs.managers.BossBarManager;
 import pw.honu.dvs.managers.MapManager;
+import pw.honu.dvs.map.HordeMap;
+import pw.honu.dvs.map.InvalidMapJsonException;
 
 public class DvS extends JavaPlugin {
 
@@ -95,6 +97,8 @@ public class DvS extends JavaPlugin {
                 maps.add(HordeMap.loadFromFolder(map));
             } catch (IOException ex) {
                 DvS.instance.getLogger().severe("Failed to load map " + map.getName() + ":\n" + ex.getLocalizedMessage());
+            } catch (InvalidMapJsonException ex) {
+                DvS.instance.getLogger().severe("Failed to load map (invalid json) " + map.getName() + ":\n" + ex.getLocalizedMessage());
             }
         }
 

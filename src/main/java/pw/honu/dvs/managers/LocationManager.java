@@ -3,13 +3,17 @@ package pw.honu.dvs.managers;
 import org.bukkit.Location;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Random;
 
 public class LocationManager {
 
     static {
-        instance = new LocationManager();
+        //instance = new LocationManager();
     }
-    public static LocationManager instance;
+    //public static LocationManager instance;
 
     /**
      * Where all players are teleported at the start of the event
@@ -22,14 +26,18 @@ public class LocationManager {
     private @Nullable Location monsterLobby;
 
     /**
-     * Location where monsters spawn
+     * Locations where monsters spawn
      */
-    private @Nullable Location monsterSpawn;
+    private @Nullable List<Location> monsterSpawns = new ArrayList<>();
+
+    private List<Location> checkpoints = new ArrayList<>();
 
     /**
      * What location monsters will attempt to move to when spawned
      */
     private @Nullable Location monsterTarget;
+
+    private static Random random = new Random();
 
     public LocationManager() {
 
@@ -44,8 +52,7 @@ public class LocationManager {
         this.playerStart = playerStart;
     }
 
-    @Nullable
-    public Location getMonsterLobby() {
+    @Nullable public Location getMonsterLobby() {
         return monsterLobby;
     }
 
@@ -53,13 +60,23 @@ public class LocationManager {
         this.monsterLobby = monsterLobby;
     }
 
-    @Nullable
-    public Location getMonsterSpawn() {
-        return monsterSpawn;
+    @Nullable public List<Location> getMonsterSpawns() {
+        return monsterSpawns;
     }
 
-    public void setMonsterSpawn(@Nullable Location monsterSpawn) {
-        this.monsterSpawn = monsterSpawn;
+    public void setMonsterSpawns(@Nullable List<Location> monsterSpawn) {
+        this.monsterSpawns = monsterSpawn;
+    }
+
+    /**
+     * Get a random spawn location from the list of valid monster spawns
+     */
+    public @Nullable Location getRandomMonsterSpawn() {
+        if (this.monsterSpawns == null) {
+            return null;
+        }
+
+        return this.monsterSpawns.get(random.nextInt(this.monsterSpawns.size()));
     }
 
     @Nullable

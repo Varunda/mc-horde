@@ -4,6 +4,7 @@ import me.libraryaddict.disguise.disguisetypes.DisguiseType;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffect;
 import org.jetbrains.annotations.NotNull;
 import pw.honu.dvs.managers.MonsterManager;
 
@@ -24,12 +25,15 @@ public class MonsterTemplate {
     private @Nullable ItemStack legs;
     private @Nullable ItemStack boots;
 
-    private @NotNull List<ItemStack> inventory;
+    private @NotNull List<ItemStack> inventory = new ArrayList<>();
 
     private @Nullable String abilityName;
     private int abilityCooldown;
     private int abilityCount;
+
     private ChatColor glowColor;
+
+    private List<PotionEffect> potionEffects = new ArrayList<>();
 
     public MonsterTemplate(@NotNull String name, @NotNull EntityType type, @NotNull DisguiseType disguiseType) {
         this.name = name;
@@ -138,5 +142,13 @@ public class MonsterTemplate {
 
     public ChatColor getGlowColor() {
         return glowColor;
+    }
+
+    public List<PotionEffect> getPotionEffects() {
+        return potionEffects;
+    }
+
+    public void setPotionEffects(List<PotionEffect> potionEffects) {
+        this.potionEffects = potionEffects;
     }
 }

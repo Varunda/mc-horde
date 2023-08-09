@@ -66,7 +66,7 @@ public class PlayerDeathListener implements Listener {
 
         final Player p = event.getPlayer();
 
-        Component comp = event.deathMessage();
+        final Component comp = event.deathMessage();
 
         event.setCancelled(true);
 
@@ -107,6 +107,11 @@ public class PlayerDeathListener implements Listener {
                                 )
                         )
                 );
+
+                int kills = PlayerStatsManager.instance.getKills(p.getUniqueId());
+                if (kills > 0) {
+                    p.sendMessage(ChatColor.WHITE + "Your rampage lasted " + ChatColor.RED + kills + " kills");
+                }
             }
         } else if (state == PlayerState.MONSTER) {
             // if the player was disguised as a mob, it's somewhat confusing to have the thing you were attacking just disappear

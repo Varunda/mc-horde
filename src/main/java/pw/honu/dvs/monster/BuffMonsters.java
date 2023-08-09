@@ -2,7 +2,11 @@ package pw.honu.dvs.monster;
 
 import me.libraryaddict.disguise.disguisetypes.DisguiseType;
 import org.bukkit.ChatColor;
+import org.bukkit.DyeColor;
 import org.bukkit.Material;
+import org.bukkit.block.Banner;
+import org.bukkit.block.banner.Pattern;
+import org.bukkit.block.banner.PatternType;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Monster;
 import org.bukkit.inventory.ItemStack;

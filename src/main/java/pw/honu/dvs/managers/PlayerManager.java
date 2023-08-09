@@ -1,22 +1,13 @@
 package pw.honu.dvs.managers;
 
-import me.libraryaddict.disguise.disguisetypes.DisguiseType;
-import me.libraryaddict.disguise.disguisetypes.MobDisguise;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.ComponentBuilder;
-import net.kyori.adventure.text.TextComponent;
-import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.*;
-import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.EntityEquipment;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scoreboard.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import pw.honu.dvs.DvS;
 import pw.honu.dvs.DvSLogger;
 import pw.honu.dvs.PlayerState;
 import pw.honu.dvs.item.RespawnItem;
@@ -56,13 +47,13 @@ public class PlayerManager {
      * Set the player state
      */
     public void setPlayer(@NotNull UUID uuid, @NotNull PlayerState state) {
+        if (players.get(uuid) == state) {
+            return;
+        }
+
         @Nullable Player p = Bukkit.getPlayer(uuid);
         if (p != null) {
             p.sendMessage("Your player state was updated to " + state);
-        }
-
-        if (players.get(uuid) == state) {
-            return;
         }
 
         players.put(uuid, state);
@@ -71,17 +62,12 @@ public class PlayerManager {
     }
 
     public boolean sendToPlayerSpawn(@NotNull Player player) {
-        if (LocationManager.instance.getPlayerStart() == null) {
-            DvSLogger.warn("Cannot send player to player spawn: player spawn is not set");
-            return false;
-        }
-
         if (!player.isOnline()) {
             DvSLogger.warn("Cannot send player to player spawn: player is not online");
             return false;
         }
 
-        player.teleport(LocationManager.instance.getPlayerStart());
+        player.teleport(MatchManager.instance.getRunningMap().getPlayerStart());
 
         return true;
     }
@@ -106,9 +92,7 @@ public class PlayerManager {
         p.sendMessage(ChatColor.DARK_PURPLE + "Left click to view items. Right click to select");
 
         PlayerManager.instance.setPlayer(p.getUniqueId(), PlayerState.RESPAWNING);
-        if (LocationManager.instance.getMonsterLobby() != null) {
-            p.teleport(LocationManager.instance.getMonsterLobby());
-        }
+        p.teleport(MatchManager.instance.getRunningMap().getMonsterLobby());
 
         p.setHealth(20);
         p.setFoodLevel(20);
@@ -142,10 +126,7 @@ public class PlayerManager {
             return false;
         }
 
-        if (LocationManager.instance.getMonsterSpawn() == null) {
-            DvSLogger.warn("Cannot respawn " + playerID + " to monster spawn: monster spawn is null");
-            return false;
-        }
+        Location spawnLocation = MatchManager.instance.getRunningMap().getRandomMonsterSpawn();
 
         PlayerManager.instance.setPlayer(playerID, PlayerState.MONSTER);
 
@@ -153,7 +134,7 @@ public class PlayerManager {
 
         p.getEquipment().clear();
         MonsterManager.instance.setInventory(p, template);
-        p.teleport(LocationManager.instance.getMonsterSpawn());
+        p.teleport(spawnLocation);
         p.setGameMode(GameMode.SURVIVAL);
 
         p.sendMessage("You spawned in with the " + ChatColor.DARK_PURPLE + template.getName() + ChatColor.RESET + " monster template");
@@ -161,6 +142,10 @@ public class PlayerManager {
         return true;
     }
 
+    /**
+     * Give a player the rampage effect (strength 100 for 3 seconds)
+     * @param p Player that the rampage is given to
+     */
     public void giveRampage(Player p) {
         p.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, 20 * 3, 100));
         World playerWorld = p.getLocation().getWorld();

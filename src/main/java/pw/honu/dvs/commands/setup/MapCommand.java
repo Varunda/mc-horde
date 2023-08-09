@@ -3,7 +3,7 @@ package pw.honu.dvs.commands.setup;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import pw.honu.dvs.DvS;
-import pw.honu.dvs.HordeMap;
+import pw.honu.dvs.map.HordeMap;
 import pw.honu.dvs.commands.Command;
 import pw.honu.dvs.commands.CommandInfo;
 import pw.honu.dvs.managers.MapManager;
@@ -32,7 +32,9 @@ public class MapCommand implements Command {
 
         switch (arg) {
             case "reload": {
+                sender.sendMessage("Reloading maps...");
                 DvS.instance.loadMaps();
+                sender.sendMessage("Loaded " + MapManager.instance.getMaps().size() + " maps");
                 break;
             }
 
@@ -59,10 +61,10 @@ public class MapCommand implements Command {
                 List<HordeMap> maps = MapManager.instance.getMaps();
                 sender.sendMessage(maps.size() + " maps available");
 
-                List<String> mapNames = maps.stream().map(HordeMap::getName).collect(Collectors.toList());
-                for (String mapName : mapNames) {
-                    sender.sendMessage(" - " + mapName);
+                for (HordeMap map : maps) {
+                    sender.sendMessage(" - " + map.getName() + " by " + map.getAuthor());
                 }
+
                 break;
             }
 

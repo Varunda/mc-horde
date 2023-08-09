@@ -11,6 +11,7 @@ import pw.honu.dvs.commands.CommandInfo;
 import pw.honu.dvs.commands.Commands;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 @CommandInfo(
@@ -43,10 +44,9 @@ public class LocCommand implements Command {
             Location gotoLoc = null;
 
             switch (which) {
-                case "player": gotoLoc = LocationManager.instance.getPlayerStart(); break;
-                case "monsterspawn": gotoLoc = LocationManager.instance.getMonsterSpawn(); break;
-                case "monsterlobby": gotoLoc = LocationManager.instance.getMonsterLobby(); break;
-                case "monstertarget": gotoLoc = LocationManager.instance.getMonsterTarget(); break;
+                case "player": gotoLoc = MatchManager.instance.getRunningMap().getPlayerStart(); break;
+                case "monsterlobby": gotoLoc = MatchManager.instance.getRunningMap().getMonsterLobby(); break;
+                case "monstertarget": gotoLoc = MatchManager.instance.getRunningMap().getMonsterTarget(); break;
                 default: return false;
             }
 
@@ -61,45 +61,13 @@ public class LocCommand implements Command {
             return false;
         }
 
-        if (action.equals("set")) {
-            switch (which) {
-                case "player":
-                    LocationManager.instance.setPlayerStart(loc);
-                    break;
-
-                case "monsterspawn":
-                    LocationManager.instance.setMonsterSpawn(loc);
-                    break;
-
-                case "monsterlobby":
-                    LocationManager.instance.setMonsterLobby(loc);
-                    break;
-
-                case "monstertarget":
-                    LocationManager.instance.setMonsterTarget(loc);
-                    break;
-
-                case "all":
-                    LocationManager.instance.setPlayerStart(loc);
-                    LocationManager.instance.setMonsterSpawn(loc);
-                    LocationManager.instance.setMonsterLobby(loc);
-                    LocationManager.instance.setMonsterTarget(loc);
-                    break;
-
-                default:
-                    return false;
-            }
-
-            p.sendMessage("Set " + which + " to: " + loc.toString());
-        }
-
         return true;
     }
 
     @Override
     public List<String> tab(MatchManager match, Player player, String... args) {
         if (args.length <= 1) {
-            return Arrays.asList("goto", "set");
+            return Collections.singletonList("goto");
         }
 
         return Arrays.asList("player", "monsterlobby", "monsterspawn", "monstertarget", "all");

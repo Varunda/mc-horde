@@ -1,32 +1,30 @@
 package pw.honu.dvs.managers;
 
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.title.Title;
 import org.bukkit.*;
 import org.bukkit.block.Chest;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 import pw.honu.dvs.*;
 import pw.honu.dvs.item.AbilityItem;
+import pw.honu.dvs.map.HordeMap;
+import pw.honu.dvs.map.RunningHordeMap;
+import pw.honu.dvs.util.LocationUtil;
 import pw.honu.dvs.util.TitleUtil;
+import pw.honu.dvs.util.WorldUtil;
 import pw.honu.dvs.wave.Wave;
 import pw.honu.dvs.wave.WaveEntry;
-import ru.xezard.glow.data.glow.Glow;
 
 import javax.annotation.Nullable;
-import javax.xml.crypto.dsig.dom.DOMValidateContext;
-import java.awt.*;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import java.util.UUID;
 
 public class MatchManager {
 
@@ -44,8 +42,9 @@ public class MatchManager {
 
     private BukkitTask gatheringCountdownRunnable;
     private BukkitTask monsterTargetTask;
-    private BukkitTask monsterCheckpointTask;
     private BukkitTask waveRepeatTask;
+
+    private RunningHordeMap map;
 
     private MatchManager(DvS plugin) {
         this.plugin = plugin;
@@ -63,11 +62,7 @@ public class MatchManager {
             return false;
         }
 
-        @Nullable Location monsterSpawn = LocationManager.instance.getMonsterSpawn();
-        if (monsterSpawn == null) {
-            DvSLogger.warn("Cannot spawn wave: Monster spawn is not set");
-            return false;
-        }
+        Location monsterSpawn = this.map.getRandomMonsterSpawn();
 
         int spawnedCount = 0;
 
@@ -117,53 +112,31 @@ public class MatchManager {
             DvS.instance.getLogger().warning("State is " + this.getMatchState() + " not " + MatchState.PRE_GAME + ". Might cause unexpected behavior");
         }
 
-        @Nullable Location monsterSpawn = LocationManager.instance.getMonsterSpawn();
-        @Nullable Location playerSpawn = LocationManager.instance.getPlayerStart();
-        @Nullable Location monsterLobby = LocationManager.instance.getMonsterLobby();
-        @Nullable Chest playerChest = getPlayerChest();
+        HordeMap map = MapManager.instance.getNextMap();
+        assert map != null;
 
-        List<String> errors = new ArrayList<>();
-        if (monsterSpawn == null) { errors.add("Missing monster spawn"); }
-        if (playerSpawn == null) { errors.add("Missing player spawn"); }
-        if (monsterLobby == null) { errors.add("Missing monster lobby"); }
-        if (playerChest == null) { errors.add("Missing player chest"); }
-
-        if (errors.size() > 0) {
-            DvSLogger.warn("Cannot start the match:");
-            for (String s : errors) {
-                DvSLogger.warn(s);
-            }
-            return false;
-        }
-
-        assert playerSpawn != null;
-        World gameWorld = playerSpawn.getWorld();
-
-        gameWorld.setTime(0);
-        gameWorld.setGameRule(GameRule.DO_IMMEDIATE_RESPAWN, false);
-        gameWorld.setGameRule(GameRule.KEEP_INVENTORY, false);
-        gameWorld.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, true);
-        gameWorld.setGameRule(GameRule.BLOCK_EXPLOSION_DROP_DECAY, true);
-        gameWorld.setGameRule(GameRule.DO_INSOMNIA, false);
-        gameWorld.setGameRule(GameRule.DO_TRADER_SPAWNING, false);
-        gameWorld.setGameRule(GameRule.DO_WEATHER_CYCLE, false);
-        gameWorld.setGameRule(GameRule.SPECTATORS_GENERATE_CHUNKS, false);
+        World gameWorld = setupMatchWorld(map);
         gameWorld.setPVP(false);
-        gameWorld.setDifficulty(Difficulty.EASY);
+        this.map = new RunningHordeMap(map, gameWorld);
 
         Bukkit.getOnlinePlayers().forEach(iter -> {
             PlayerManager.instance.setPlayer(iter.getUniqueId(), PlayerState.ALIVE);
             BossBarManager.instance.addPlayer(iter);
 
-            iter.setGameMode(GameMode.SURVIVAL);
-            iter.teleport(playerSpawn);
+            if (!iter.isOp()) {
+                iter.setGameMode(GameMode.SURVIVAL);
+            }
+            iter.teleport(this.map.getPlayerStart());
             iter.sendMessage(ChatColor.DARK_PURPLE + "Match started!");
+
+            iter.getInventory().addItem(new ItemStack(Material.IRON_AXE));
+            iter.getInventory().addItem(new ItemStack(Material.IRON_PICKAXE));
+            iter.getInventory().addItem(new ItemStack(Material.IRON_SHOVEL));
+            iter.getInventory().addItem(new ItemStack(Material.IRON_HOE));
+            iter.getInventory().addItem(new ItemStack(Material.OAK_LOG, 8));
         });
 
         setMatchState(MatchState.GATHERING);
-
-        HordeMap map = MapManager.instance.getNextMap();
-        assert map != null;
 
         this.gatheringCountdownRunnable = new GatheringCountdownRunnable(this, map.getSetupTicks()).runTaskTimer(this.plugin, 0, 1);
         ScoreboardManager.instance.update();
@@ -171,19 +144,50 @@ public class MatchManager {
         return true;
     }
 
+    /**
+     * Create the bukkit World for the match
+     * @param map Map info, used to set locations
+     * @return a Bukkit World, ready for use
+     */
+    private World setupMatchWorld(HordeMap map) {
+        String matchId = UUID.randomUUID() + "-" + map.getName();
+
+        DvSLogger.info("Cloning world " + map.getName() + " into " + matchId);
+        World matchWorld = WorldUtil.cloneWorld(map.getFolder(), matchId);
+
+        Location chestLoc = LocationUtil.create(matchWorld, map.getChest());
+        if (matchWorld.getBlockAt(chestLoc).getType() != Material.CHEST) {
+            DvS.instance.getLogger().severe("MISSING CHEST AT " + chestLoc.toString() + " from map " + map.getName());
+            matchWorld.getBlockAt(chestLoc).setType(Material.CHEST);
+        }
+
+        Chest chest = (Chest) matchWorld.getBlockAt(chestLoc).getState();
+
+        MatchManager.instance.setPlayerChest(chest);
+
+        matchWorld.setTime(0);
+        matchWorld.setSpawnLocation(map.getPlayerStart().toLocation(matchWorld));
+        matchWorld.setGameRule(GameRule.DO_IMMEDIATE_RESPAWN, false);
+        matchWorld.setGameRule(GameRule.KEEP_INVENTORY, false);
+        matchWorld.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, true);
+        matchWorld.setGameRule(GameRule.BLOCK_EXPLOSION_DROP_DECAY, true);
+        matchWorld.setGameRule(GameRule.DO_INSOMNIA, false);
+        matchWorld.setGameRule(GameRule.DO_TRADER_SPAWNING, false);
+        matchWorld.setGameRule(GameRule.DO_WEATHER_CYCLE, false);
+        matchWorld.setGameRule(GameRule.SPECTATORS_GENERATE_CHUNKS, false);
+        matchWorld.setDifficulty(Difficulty.EASY);
+
+        return matchWorld;
+    }
+
     public void startCombatPhase() {
         if (this.getMatchState() != MatchState.GATHERING) {
             DvS.instance.getLogger().warning("State is " + this.getMatchState() + " not " + MatchState.GATHERING + ". Might cause unexpected behavior");
         }
 
-        @Nullable Location playerSpawn = LocationManager.instance.getPlayerStart();
-        if (null == playerSpawn) {
-            DvSLogger.error("Cannot start combat phase: spawn location is not set!");
-            return;
-        }
+        assert this.getPlayerChest() != null;
 
-        World gameWorld = playerSpawn.getWorld();
-
+        World gameWorld = this.map.getMatchWorld();
         gameWorld.setTime(18_000);
         gameWorld.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, false);
         gameWorld.setGameRule(GameRule.BLOCK_EXPLOSION_DROP_DECAY, true);
@@ -191,7 +195,7 @@ public class MatchManager {
         gameWorld.setGameRule(GameRule.DO_TRADER_SPAWNING, false);
         gameWorld.setGameRule(GameRule.DO_WEATHER_CYCLE, false);
         gameWorld.setGameRule(GameRule.SPECTATORS_GENERATE_CHUNKS, false);
-        gameWorld.setPVP(true);
+        gameWorld.setPVP(true); // pvp must be on to allow monster players to hit alive players
         gameWorld.setDifficulty(Difficulty.EASY);
 
         Bukkit.getOnlinePlayers().forEach(iter -> {
@@ -201,9 +205,7 @@ public class MatchManager {
                 iter.getInventory().addItem(AbilityItem.create(AbilityItem.PATHFIND_ITEM, 1));
                 iter.getInventory().addItem(AbilityItem.create(AbilityItem.TARGET_ITEM, 1));
                 iter.getInventory().addItem(AbilityItem.create(AbilityItem.LAUNCHER_ITEM, 1));
-                iter.getInventory().addItem(AbilityItem.create(AbilityItem.SPAWN_ZOMBIE, 1));
-                iter.getInventory().addItem(AbilityItem.create(AbilityItem.SPAWN_HUSK, 1));
-                iter.getInventory().addItem(AbilityItem.create(AbilityItem.SPAWN_DROWNED, 1));
+                iter.getInventory().addItem(AbilityItem.create(AbilityItem.SPAWN_ZOMBIE_HORDE, 1));
                 iter.getInventory().addItem(AbilityItem.create(AbilityItem.SPAWN_CREEPER, 1));
                 iter.getInventory().addItem(AbilityItem.create(AbilityItem.SPAWN_PIGLIN_ITEM, 1));
                 iter.getInventory().addItem(AbilityItem.create(AbilityItem.SPAWN_PIGLIN_ARCHER_ITEM, 1));
@@ -216,9 +218,11 @@ public class MatchManager {
                 iter.clearActivePotionEffects();
             }
 
-            iter.teleport(playerSpawn);
+            iter.teleport(this.map.getPlayerStart());
             iter.sendMessage(ChatColor.DARK_PURPLE + "Combat has begun!");
         });
+
+        this.getPlayerChest().getBlockInventory().clear();
 
         if (this.gatheringCountdownRunnable != null) {
             this.gatheringCountdownRunnable.cancel();
@@ -235,12 +239,12 @@ public class MatchManager {
             }
         }
 
-        this.monsterTargetTask = new MonsterTargetRunnable().runTaskTimer(DvS.instance, 20 * 1, 20 * 10);
-        this.monsterCheckpointTask = new MonsterTargetCountRunnable().runTaskTimer(DvS.instance, 0, 20);
-        this.waveRepeatTask = new WaveRepeatRunnable().runTaskTimer(DvS.instance, 0, 20);
+        this.monsterTargetTask = new MonsterTargetRunnable(this).runTaskTimer(DvS.instance, 0, 20);
+        this.waveRepeatTask = new WaveRepeatRunnable(this).runTaskTimer(DvS.instance, 0, 20);
 
         this.setMatchState(MatchState.RUNNING);
         ScoreboardManager.instance.update();
+        BossBarManager.instance.setProgress(1d);
     }
 
     /**
@@ -277,9 +281,9 @@ public class MatchManager {
             this.monsterTargetTask = null;
         }
 
-        if (this.monsterCheckpointTask != null) {
-            this.monsterCheckpointTask.cancel();
-            this.monsterCheckpointTask = null;
+        if (this.waveRepeatTask != null) {
+            this.waveRepeatTask.cancel();
+            this.waveRepeatTask = null;
         }
 
         ScoreboardManager.instance.update();
@@ -329,6 +333,10 @@ public class MatchManager {
 
     public void setPlayerChest(@Nullable Chest playerChest) {
         this.playerChest = playerChest;
+    }
+
+    public RunningHordeMap getRunningMap() {
+        return this.map;
     }
 
 }

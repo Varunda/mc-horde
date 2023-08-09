@@ -3,6 +3,7 @@ package pw.honu.dvs.mob_goals;
 import com.destroystokyo.paper.entity.ai.Goal;
 import com.destroystokyo.paper.entity.ai.GoalKey;
 import com.destroystokyo.paper.entity.ai.GoalType;
+import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Mob;
 import org.bukkit.plugin.Plugin;
@@ -41,11 +42,13 @@ public class MonsterTargetMobGoal implements Goal<Mob> {
             return false;
         }
 
-        if (LocationManager.instance.getMonsterTarget() == null) {
+        Location monsterTarget = MatchManager.instance.getRunningMap().getMonsterTarget();
+
+        if (monsterTarget == null) {
             return false;
         }
 
-        if (!LocationManager.instance.getMonsterTarget().getWorld().equals(mob.getWorld())) {
+        if (!monsterTarget.getWorld().equals(mob.getWorld())) {
             return false;
         }
 
@@ -55,7 +58,7 @@ public class MonsterTargetMobGoal implements Goal<Mob> {
         }
 
         // if the mob is more than 2 blocks away (and no target), pathfind towards it
-        if (mob.getLocation().distanceSquared(LocationManager.instance.getMonsterTarget()) > 4d) {
+        if (mob.getLocation().distanceSquared(monsterTarget) > 4d) {
             return true;
         }
 
@@ -75,14 +78,12 @@ public class MonsterTargetMobGoal implements Goal<Mob> {
 
     @Override
     public void tick() {
-        if (LocationManager.instance.getMonsterTarget() == null) {
-            return;
-        }
+        Location monsterTarget = MatchManager.instance.getRunningMap().getMonsterTarget();
 
-        if (mob.getLocation().distance(LocationManager.instance.getMonsterTarget()) < 2d) {
+        if (mob.getLocation().distance(monsterTarget) < 2d) {
             mob.getPathfinder().stopPathfinding();
         } else {
-            this.mob.getPathfinder().moveTo(LocationManager.instance.getMonsterTarget(), 1d);
+            this.mob.getPathfinder().moveTo(monsterTarget, 1d);
         }
     }
 

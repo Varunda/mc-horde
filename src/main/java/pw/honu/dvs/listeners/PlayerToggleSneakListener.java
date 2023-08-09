@@ -13,7 +13,7 @@ import pw.honu.dvs.managers.MatchManager;
 
 public class PlayerToggleSneakListener implements Listener {
 
-    @EventHandler
+    //@EventHandler
     public void playerSneak(PlayerToggleSneakEvent ev) {
         if (MatchManager.instance.getMatchState() != MatchState.GATHERING) {
             return;

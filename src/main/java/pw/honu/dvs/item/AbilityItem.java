@@ -39,6 +39,7 @@ public class AbilityItem {
     public static final AbilityItem PATHFIND_ITEM = new AbilityItem(false, PathfindAbility.name, Material.PRISMARINE_SHARD);
     public static final AbilityItem TARGET_ITEM = new AbilityItem(false, TargetAbility.name, Material.BLAZE_ROD);
 
+    public static final AbilityItem SPAWN_ZOMBIE_HORDE = new AbilityItem(false, SpawnZombieHordeAbility.name, Material.ROTTEN_FLESH);
     public static final AbilityItem SPAWN_ZOMBIE = new AbilityItem(false, SpawnZombieAbility.name, Material.ROTTEN_FLESH);
     public static final AbilityItem SPAWN_HUSK = new AbilityItem(false, SpawnHuskAbility.name, Material.HEART_OF_THE_SEA);
     public static final AbilityItem SPAWN_DROWNED = new AbilityItem(false, SpawnDrownedAbility.name, Material.TRIDENT);

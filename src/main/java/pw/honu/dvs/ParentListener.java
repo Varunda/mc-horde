@@ -27,6 +27,7 @@ public class ParentListener {
         pm.registerEvents(new PotionEffectListener(), plugin);
         pm.registerEvents(new BreedListener(), plugin);
         pm.registerEvents(new PlayerInteractEntityListener(), plugin);
+        pm.registerEvents(new PlayerRespawnListener(), plugin);
     }
 
 }

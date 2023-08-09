@@ -11,6 +11,12 @@ public class WaveRepeatRunnable extends BukkitRunnable {
 
     private int left = 0;
 
+    private final MatchManager match;
+
+    public WaveRepeatRunnable(MatchManager match) {
+        this.match = match;
+    }
+
     @Override
     public void run() {
         if (WaveManager.instance.repeatInSeconds <= 0) {
@@ -21,9 +27,6 @@ public class WaveRepeatRunnable extends BukkitRunnable {
 
         if (left <= 0) {
             if (MatchManager.instance.getMatchState() != MatchState.RUNNING) {
-                return;
-            }
-            if (LocationManager.instance.getMonsterSpawn() == null) {
                 return;
             }
 

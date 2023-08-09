@@ -1,11 +1,8 @@
 package pw.honu.dvs.managers;
 
 import org.jetbrains.annotations.Nullable;
-import pw.honu.dvs.DvS;
-import pw.honu.dvs.HordeMap;
+import pw.honu.dvs.map.HordeMap;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 

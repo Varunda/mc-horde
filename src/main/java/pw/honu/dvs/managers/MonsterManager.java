@@ -9,6 +9,8 @@ import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.scoreboard.Score;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.reflections.Reflections;
@@ -122,11 +124,15 @@ public class MonsterManager {
         }
 
         if (template.getGlowColor() != null) {
-            //Glow glow = Glow.builder().color(template.getGlowColor()).name("Boss." + template.getName()).build();
-            //glow.addHolders(le);
+            Glow glow = Glow.builder().color(template.getGlowColor()).name("Glow." + le.getUniqueId()).build();
+            glow.addHolders(le);
             for (Player p : Bukkit.getOnlinePlayers()) {
-                //glow.display(p);
+                glow.display(p);
             }
+        }
+
+        for (PotionEffect e : template.getPotionEffects()) {
+            le.addPotionEffect(e);
         }
 
         if (le instanceof Mob) {
