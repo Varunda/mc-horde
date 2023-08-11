@@ -135,15 +135,12 @@ public class MonsterManager {
             le.addPotionEffect(e);
         }
 
-        if (le instanceof Mob) {
-            Mob m = (Mob) le;
-
+        if (le instanceof Mob m) {
             MobGoals mg = Bukkit.getMobGoals();
             mg.addGoal(m, 1, new MonsterTargetMobGoal(DvS.instance, m));
         }
 
-        if (le instanceof Slime) {
-            Slime s = (Slime) le;
+        if (le instanceof Slime s) {
             s.setWander(false);
         }
 

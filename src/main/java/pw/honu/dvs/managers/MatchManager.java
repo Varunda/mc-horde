@@ -1,19 +1,24 @@
 package pw.honu.dvs.managers;
 
+import me.filoghost.holographicdisplays.api.hologram.Hologram;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
 import org.bukkit.*;
 import org.bukkit.block.Chest;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Player;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.entity.*;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 import pw.honu.dvs.*;
 import pw.honu.dvs.item.AbilityItem;
 import pw.honu.dvs.map.HordeMap;
+import pw.honu.dvs.map.HordeMapAnimals;
 import pw.honu.dvs.map.RunningHordeMap;
+import pw.honu.dvs.util.ListUtil;
 import pw.honu.dvs.util.LocationUtil;
 import pw.honu.dvs.util.TitleUtil;
 import pw.honu.dvs.util.WorldUtil;
@@ -45,6 +50,9 @@ public class MatchManager {
     private BukkitTask waveRepeatTask;
 
     private RunningHordeMap map;
+
+    private @Nullable Slime chestSlime;
+    private @Nullable Hologram chestHologram;
 
     private MatchManager(DvS plugin) {
         this.plugin = plugin;
@@ -129,16 +137,66 @@ public class MatchManager {
             iter.teleport(this.map.getPlayerStart());
             iter.sendMessage(ChatColor.DARK_PURPLE + "Match started!");
 
-            iter.getInventory().addItem(new ItemStack(Material.IRON_AXE));
-            iter.getInventory().addItem(new ItemStack(Material.IRON_PICKAXE));
-            iter.getInventory().addItem(new ItemStack(Material.IRON_SHOVEL));
-            iter.getInventory().addItem(new ItemStack(Material.IRON_HOE));
-            iter.getInventory().addItem(new ItemStack(Material.OAK_LOG, 8));
+            for (ItemStack i : map.getStartingKit()) {
+                iter.getInventory().addItem(i);
+            }
         });
 
-        setMatchState(MatchState.GATHERING);
+        assert getPlayerChest() != null;
+
+        Location chestLoc = getPlayerChest().getLocation().toCenterLocation();
+        chestLoc.setY(chestLoc.getY() - 0.5d);
+
+        try {
+            Entity chestGlow = gameWorld.spawnEntity(chestLoc, EntityType.SLIME);
+            Slime chestSlime = (Slime) chestGlow;
+            chestSlime.setAI(false);
+            chestSlime.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, PotionEffect.INFINITE_DURATION, 1, true, false));
+            chestSlime.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, PotionEffect.INFINITE_DURATION, 1, true, false));
+            chestSlime.setSize(1);
+            chestSlime.setInvulnerable(true);
+            chestSlime.setWander(false);
+            chestSlime.setPersistent(true);
+            chestSlime.setRemoveWhenFarAway(false);
+            this.chestSlime = chestSlime;
+            DvSLogger.info("slime chest glow at " + chestLoc.toVector() + " uuid " + chestSlime.getUniqueId());
+        } catch (Exception ex) {
+            DvSLogger.error("failed to create glowing chest slime: " + ex);
+        }
+
+        try {
+            DvS.instance.getLogger().info("creating hologram...");
+            Hologram h = HologramManager.instance.create(chestLoc.add(0d, 1.5d, 0d), "Player chest");
+            this.chestHologram = h;
+        } catch (Exception ex) {
+            DvSLogger.error("failed to create chest hologram: " + ex);
+        }
+
+        if (!map.getAnimals().locations.isEmpty()) {
+            List<Vector> places = map.getAnimals().locations;
+
+            DvS.instance.getLogger().info("Spawning " + map.getAnimals().herds.size() + " animal herds");
+
+            for (HordeMapAnimals.HordeMapAnimalHerd herd : map.getAnimals().herds) {
+                if (places.isEmpty()) {
+                    DvSLogger.warn("not enough locations set for the animals being spawned, this will cause double spawns");
+                    places = map.getAnimals().locations;
+                }
+
+                Vector v = ListUtil.getRandomElement(places);
+                places.remove(v);
+
+                DvS.instance.getLogger().info("Spawning " + herd.amount + " " + herd.type + "s at " + v);
+
+                for (int i = 0; i < herd.amount; ++i) {
+                    gameWorld.spawnEntity(v.toLocation(gameWorld), herd.type);
+                }
+            }
+        }
 
         this.gatheringCountdownRunnable = new GatheringCountdownRunnable(this, map.getSetupTicks()).runTaskTimer(this.plugin, 0, 1);
+
+        setMatchState(MatchState.GATHERING);
         ScoreboardManager.instance.update();
 
         return true;
@@ -186,6 +244,16 @@ public class MatchManager {
         }
 
         assert this.getPlayerChest() != null;
+
+        if (this.chestSlime != null) {
+            this.chestSlime.remove();
+            this.chestSlime = null;
+        }
+
+        if (this.chestHologram != null) {
+            this.chestHologram.delete();
+            this.chestHologram = null;
+        }
 
         World gameWorld = this.map.getMatchWorld();
         gameWorld.setTime(18_000);

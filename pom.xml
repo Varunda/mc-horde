@@ -68,6 +68,7 @@
                         <artifactSet>
                             <excludes>
                                 <exclude>io.papermc.paper.paper-api</exclude>
+                                <exclude>me.filoghost.holographicdisplays.api</exclude>
                             </excludes>
                         </artifactSet>
                     </configuration>
@@ -78,10 +79,12 @@
 
         <resources>
             <!-- Resource filtering; use Maven version in plugin.yml -->
+            <!--
             <resource>
                 <directory>src/main/resources</directory>
                 <filtering>true</filtering>
             </resource>
+            -->
         </resources>
     </build>
 
@@ -99,6 +102,11 @@
         <repository>
             <id>jitpack.io</id>
             <url>https://jitpack.io</url>
+        </repository>
+
+        <repository>
+            <id>codemc-repo</id>
+            <url>https://repo.codemc.io/repository/maven-public/</url>
         </repository>
     </repositories>
 
@@ -119,6 +127,13 @@
             <groupId>io.papermc.paper</groupId>
             <artifactId>paper-api</artifactId>
             <version>1.20.1-R0.1-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>me.filoghost.holographicdisplays</groupId>
+            <artifactId>holographicdisplays-api</artifactId>
+            <version>3.0.3</version>
             <scope>provided</scope>
         </dependency>
 

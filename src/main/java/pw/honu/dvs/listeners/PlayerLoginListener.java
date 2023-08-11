@@ -39,6 +39,7 @@ public class PlayerLoginListener implements Listener {
                 event.getPlayer().setGameMode(GameMode.ADVENTURE);
                 event.getPlayer().getInventory().clear();
                 event.getPlayer().clearActivePotionEffects();
+                event.getPlayer().setExp(0);
             }
 
         } else if (state == MatchState.GATHERING) {

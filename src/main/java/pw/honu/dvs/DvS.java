@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import me.filoghost.holographicdisplays.api.HolographicDisplaysAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.Difficulty;
 import org.bukkit.World;
@@ -16,9 +17,13 @@ import pw.honu.dvs.managers.MapManager;
 import pw.honu.dvs.map.HordeMap;
 import pw.honu.dvs.map.InvalidMapJsonException;
 
+import javax.annotation.Nullable;
+
 public class DvS extends JavaPlugin {
 
     public static DvS instance = null;
+
+    public static @Nullable HolographicDisplaysAPI holograms = null;
 
     @Override
     public void onLoad() {
@@ -28,10 +33,27 @@ public class DvS extends JavaPlugin {
     public void onEnable() {
         instance = this;
         setup();
+        setupHolograms();
     }
 
     public void onDisable() {
         BossBarManager.instance.removeAll();
+    }
+
+    private void setupHolograms() {
+        if (!Bukkit.getPluginManager().isPluginEnabled("HolographicDisplays")) {
+            DvSLogger.warn("HolographicDisplays is not enabled, holograms will not work");
+            return;
+        }
+
+        try {
+            int version = HolographicDisplaysAPI.getVersion();
+            getLogger().info("HolographicDisplays version: " + version);
+
+            holograms = HolographicDisplaysAPI.get(this);
+        } catch (Exception ex) {
+            DvSLogger.error("error getting hologram api: " + ex);
+        }
     }
 
     private void setup() {
@@ -99,6 +121,9 @@ public class DvS extends JavaPlugin {
                 DvS.instance.getLogger().severe("Failed to load map " + map.getName() + ":\n" + ex.getLocalizedMessage());
             } catch (InvalidMapJsonException ex) {
                 DvS.instance.getLogger().severe("Failed to load map (invalid json) " + map.getName() + ":\n" + ex.getLocalizedMessage());
+            } catch (Exception ex) {
+                DvS.instance.getLogger().severe("Failed to load map (unchecked) " + map.getName() + ":" + ex.getLocalizedMessage() + "\n" + ex);
+                throw ex;
             }
         }
 

@@ -62,7 +62,7 @@ public class MatchCommand implements Command {
             case "status": {
                 if (args.length >= 3) {
                     try {
-                        MatchState state = MatchState.valueOf(args[2]);
+                        MatchState state = MatchState.valueOf(args[2].toUpperCase());
                         MatchManager.instance.setMatchState(state);
                         sender.sendMessage("State set to " + state);
                     } catch (IllegalArgumentException ex) {
@@ -92,7 +92,7 @@ public class MatchCommand implements Command {
                 } else if (state == MatchState.POST_GAME) {
                     MatchManager.instance.resetMatch();
                 } else {
-                    sender.sendMessage("Cannot advance match to next state, not in GATHERING");
+                    sender.sendMessage("Cannot advance match to next state, not in GATHERING, RUNNING or POST_GAME (in " + state + ")");
                 }
 
                 break;

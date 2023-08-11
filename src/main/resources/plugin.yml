@@ -3,6 +3,8 @@ author: varunda
 main: pw.honu.dvs.DvS
 version: 0.0.1
 api-version: 1.19
+softdepend:
+  - 'HolographicDisplays'
 commands:
   dvs:
     description: "Base command"

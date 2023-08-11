@@ -34,6 +34,7 @@ import pw.honu.dvs.managers.MatchManager;
 import pw.honu.dvs.managers.MonsterManager;
 import pw.honu.dvs.managers.PlayerManager;
 import pw.honu.dvs.monster.MonsterTemplate;
+import pw.honu.dvs.util.ItemUtil;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -250,36 +251,43 @@ public class ItemListener implements Listener {
                 Ageable crop2 = (Ageable) data2;
                 int afterAge = crop2.getAge();
 
-                ItemMeta meta = item.getItemMeta();
-                if (meta == null) {
-                    DvS.instance.getLogger().warning("Missing item meta in hoeItemHandler");
-                    return;
-                }
-
-                if (!(meta instanceof Damageable)) {
-                    DvS.instance.getLogger().info("ItemType " + itemType + " is not damageable?");
-                    return;
-                }
-
-                Damageable d = (Damageable) meta;
-                d.setDamage(d.getDamage() + Math.max(1, (afterAge - previousAge)));
-                item.setItemMeta(d);
-
-                if (d.getDamage() >= item.getType().getMaxDurability()) {
-                    if (hand == EquipmentSlot.HAND) {
-                        player.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
-                    } else if (hand == EquipmentSlot.OFF_HAND) {
-                        player.getInventory().setItemInOffHand(new ItemStack(Material.AIR));
-                    } else {
-                        DvS.instance.getLogger().warning("hoeItemHandler> cannot remove hoe item: unchecked hand " + hand);
-                    }
-
-                    player.playSound(player.getLocation(), Sound.ENTITY_ITEM_BREAK, 1, 1);
-                }
+                ItemUtil.changeDurabilityAndMaybeBreak(ev.getPlayer(), ev.getHand(), item, Math.max(1, (afterAge - previousAge)));
             }
         }
 
         ev.setCancelled(true);
+    }
+
+    @EventHandler
+    public void shovelItemHandler(PlayerInteractEvent ev) {
+        if (MatchManager.instance.getMatchState() != MatchState.GATHERING) {
+            return;
+        }
+
+        if (ev.getItem() == null) { return; }
+        if (ev.getClickedBlock() == null) { return; }
+        if (ev.getAction() != Action.RIGHT_CLICK_BLOCK) { return; }
+
+        final Block block = ev.getClickedBlock();
+        if (block.getType() != Material.GRAVEL) {
+            return;
+        }
+
+        final ItemStack item = ev.getItem();
+        Material itemType = ev.getItem().getType();
+
+        // not a shovel
+        if (itemType != Material.WOODEN_SHOVEL && itemType != Material.STONE_SHOVEL
+                && itemType != Material.IRON_SHOVEL && itemType != Material.GOLDEN_SHOVEL
+                && itemType != Material.DIAMOND_SHOVEL && itemType != Material.NETHERITE_SHOVEL) {
+            return;
+        }
+
+        block.setType(Material.AIR);
+        block.getWorld().dropItem(block.getLocation().toCenterLocation(), new ItemStack(Material.FLINT));
+        block.getWorld().playSound(block.getLocation(), Sound.BLOCK_GRAVEL_BREAK, 1, 1);
+
+        ItemUtil.changeDurabilityAndMaybeBreak(ev.getPlayer(), ev.getHand(), item, 1);
     }
 
 }

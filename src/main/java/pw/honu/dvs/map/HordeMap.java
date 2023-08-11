@@ -1,10 +1,14 @@
 package pw.honu.dvs.map;
 
 import com.google.gson.*;
+import org.apache.logging.log4j.core.util.JsonUtils;
+import org.bukkit.entity.EntityType;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import pw.honu.dvs.DvS;
+import pw.honu.dvs.util.JsonUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,7 +35,22 @@ public class HordeMap {
 
     private List<HordeMapPhase> phases = new ArrayList<>();
 
+    /**
+     * Where the player chest is located at
+     */
     private Vector chest;
+
+    /**
+     * Map specific settings
+     */
+    private HordeMapSettings settings = new HordeMapSettings();
+
+    /**
+     * The items a player gets at the start of the gathering phase
+     */
+    private List<ItemStack> startingKit = new ArrayList<>();
+
+    private HordeMapAnimals animals = new HordeMapAnimals();
 
     public static HordeMap loadFromFolder(File folder) throws IOException, InvalidMapJsonException {
         if (!folder.isDirectory()) {
@@ -79,7 +98,13 @@ public class HordeMap {
 
         JsonObject mapJson = null;
         try {
-            mapJson = JsonParser.parseString(mapJsonContents).getAsJsonObject();
+            JsonElement contents = JsonParser.parseString(mapJsonContents);
+            if (contents == null || contents.isJsonNull()) {
+                DvS.instance.getLogger().info("map json returned null from " + jsonFile.getAbsolutePath() + ": " + mapJsonContents);
+            }
+            assert contents != null;
+
+            mapJson = contents.getAsJsonObject();
         } catch (JsonSyntaxException e) {
             throw new IOException("Invalid json encountered in " + jsonFile.getAbsolutePath() + ": " + e.getLocalizedMessage(), e);
         }
@@ -110,19 +135,96 @@ public class HordeMap {
         if (map.phases == null || map.phases.size() == 0) {
             throw new InvalidMapJsonException("missing phases, or no phases provided");
         }
+
+        if (!map.animals.herds.isEmpty() && map.animals.locations.isEmpty()) {
+            throw new InvalidMapJsonException("an animal herd is defined, but no locations are provided");
+        }
+
     }
 
-    private static void parseMapJsonVersion1(HordeMap map, JsonObject json) throws IOException {
+    private static void parseMapJsonVersion1(HordeMap map, JsonObject json) throws IOException, InvalidMapJsonException {
         map.name = json.get("name").getAsString();
         map.author = json.get("author").getAsString();
         map.setupTicks = json.get("setup_ticks").getAsInt();
-
         map.chest = parseVector(json.get("chest"));
+        map.phases = parsePhases(json.get("phases"));
 
+        if (json.get("locations").isJsonNull()) {
+            throw new InvalidMapJsonException("missing 'locations' in map json");
+        }
         JsonObject locations = json.get("locations").getAsJsonObject();
         map.monsterLobby = parseVector(locations.get("monster_lobby"));
         map.playerStart = parseVector(locations.get("player_spawn"));
-        map.phases = parsePhases(json.get("phases"));
+
+        // parse settings
+        JsonElement settingsJson = json.get("settings");
+        if (settingsJson != null && !settingsJson.isJsonNull()) {
+            if (!settingsJson.isJsonObject()) {
+                throw new InvalidMapJsonException("settings field is not an object");
+            }
+
+            JsonObject settingsObj = settingsJson.getAsJsonObject();
+
+            JsonElement mobDrops = settingsObj.get("increase_mob_drops");
+            if (!mobDrops.isJsonNull()) {
+                map.settings.setIncreaseMobDrops(mobDrops.getAsBoolean());
+            }
+
+            JsonElement oreDrops = settingsObj.get("increase_ore_drops");
+            if (!oreDrops.isJsonNull()) {
+                map.settings.setIncreaseOreDrops(oreDrops.getAsBoolean());
+            }
+        }
+
+        // parse starting kit
+        JsonElement startingItemElem = json.get("starting_kit");
+        if (startingItemElem != null && !startingItemElem.isJsonNull()) {
+            if (!startingItemElem.isJsonArray()) {
+                throw new InvalidMapJsonException("starting_kit field is not an array");
+            }
+
+            JsonArray arr = startingItemElem.getAsJsonArray();
+
+            for (JsonElement iter : arr) {
+                try {
+                    map.startingKit.add(JsonUtil.parseItemStack(iter));
+                } catch (JsonUtil.JsonFieldException ex) {
+                    throw new InvalidMapJsonException("error parsing starting kit: " + ex.getMessage());
+                }
+            }
+        }
+
+        // parse animals
+        JsonElement animalsElem = json.get("animals");
+        if (animalsElem != null && !animalsElem.isJsonNull()) {
+            if (!animalsElem.isJsonObject()) {
+                throw new InvalidMapJsonException("animals field is not an object");
+            }
+
+            JsonObject animals = animalsElem.getAsJsonObject();
+
+            map.animals.locations = parseVectors(animals.get("locations"));
+
+            JsonElement herdsElem = animals.get("herds");
+            if (herdsElem == null) {
+                throw new InvalidMapJsonException("missing animals.herds element");
+            }
+            if (!herdsElem.isJsonArray()) {
+                throw new InvalidMapJsonException("animals.herds is not an array");
+            }
+
+            JsonArray herds = herdsElem.getAsJsonArray();
+            for (JsonElement elem : herds) {
+                JsonObject obj = elem.getAsJsonObject();
+
+                HordeMapAnimals.HordeMapAnimalHerd herd = new HordeMapAnimals.HordeMapAnimalHerd();
+                herd.type = EntityType.valueOf(obj.get("type").getAsString().toUpperCase());
+                herd.amount = obj.get("amount").getAsInt();
+
+                map.animals.herds.add(herd);
+            }
+        }
+
     }
 
     /**
@@ -243,6 +345,10 @@ public class HordeMap {
         return author;
     }
 
+    public HordeMapSettings getSettings() {
+        return settings;
+    }
+
     public List<HordeMapPhase> getPhases() {
         return phases;
     }
@@ -255,6 +361,14 @@ public class HordeMap {
         }
 
         return null;
+    }
+
+    public List<ItemStack> getStartingKit() {
+        return startingKit;
+    }
+
+    public HordeMapAnimals getAnimals() {
+        return animals;
     }
 
 }

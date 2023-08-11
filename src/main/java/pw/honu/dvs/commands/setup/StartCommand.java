@@ -22,7 +22,7 @@ public class StartCommand implements Command {
     @Override
     public boolean run(MatchManager match, CommandSender sender, String... args) {
         if (match.getMatchState() != MatchState.PRE_GAME) {
-            sender.sendMessage(ChatColor.YELLOW + "Match must be in the GATHERING mode");
+            sender.sendMessage(ChatColor.YELLOW + "Match must be in the PRE_GAME mode");
             return true;
         }
 

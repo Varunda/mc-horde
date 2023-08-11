@@ -18,6 +18,10 @@ public class BlockItemDropListener implements Listener {
             return;
         }
 
+        if (!MatchManager.instance.getRunningMap().getMap().getSettings().getIncreaseOreDrops()) {
+            return;
+        }
+
         Material type = event.getBlockState().getType();
         if (type == Material.IRON_ORE || type == Material.DEEPSLATE_IRON_ORE
             || type == Material.GOLD_ORE || type == Material.DEEPSLATE_GOLD_ORE

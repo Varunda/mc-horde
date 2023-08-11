@@ -17,7 +17,7 @@ import java.util.List;
 @CommandInfo(
         name = "loc",
         pattern = "loc",
-        usage = "/dvs setspawn player|monster|both",
+        usage = "/dvs loc goto|json",
         desc = "",
         permission = ""
 )
@@ -30,17 +30,18 @@ public class LocCommand implements Command {
             return true;
         }
 
-        if (args.length != 2) {
-            return false;
-        }
-
         String action = args[0].toLowerCase();
 
         Player p = Commands.unwrap(sender);
         Location loc = p.getLocation();
-        String which = args[1].toLowerCase();
 
         if (action.equals("goto")) {
+            if (args.length < 2) {
+                return false;
+            }
+
+            String which = args[1].toLowerCase();
+
             Location gotoLoc = null;
 
             switch (which) {
@@ -61,13 +62,18 @@ public class LocCommand implements Command {
             return false;
         }
 
+        if ("json".equals(action)) {
+            Location l = p.getLocation();
+            p.sendMessage(String.format("{ \"x\": %d, \"y\": %d, \"z\": %d } ", l.getBlockX(), l.getBlockY(), l.getBlockZ()));
+        }
+
         return true;
     }
 
     @Override
     public List<String> tab(MatchManager match, Player player, String... args) {
         if (args.length <= 1) {
-            return Collections.singletonList("goto");
+            return List.of("goto", "json");
         }
 
         return Arrays.asList("player", "monsterlobby", "monsterspawn", "monstertarget", "all");

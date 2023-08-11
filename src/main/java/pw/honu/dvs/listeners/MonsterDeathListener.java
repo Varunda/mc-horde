@@ -32,11 +32,13 @@ public class MonsterDeathListener implements Listener {
                 return;
             }
 
-            for (ItemStack drop : event.getDrops()) {
-                drop.setAmount(drop.getAmount() * 2 + _random.nextInt(3));
-            }
+            if (MatchManager.instance.getRunningMap().getMap().getSettings().getIncreaseMobDrops()) {
+                for (ItemStack drop : event.getDrops()) {
+                    drop.setAmount(drop.getAmount() * 2 + _random.nextInt(3));
+                }
 
-            event.setDroppedExp(event.getDroppedExp() * 2);
+                event.setDroppedExp(event.getDroppedExp() * 2);
+            }
 
             return;
         }
